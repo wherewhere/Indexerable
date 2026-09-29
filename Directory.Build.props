@@ -1,0 +1,30 @@
+<Project>
+
+  <PropertyGroup>
+    <Authors>wherewhere</Authors>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <Copyright>Copyright © 2017 - 2026 wherewhere. All Rights Reserved.</Copyright>
+    <Deterministic>true</Deterministic>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <IncludeSymbols>True</IncludeSymbols>
+    <LangVersion>latest</LangVersion>
+    <PackageIcon>Icon.png</PackageIcon>
+    <PackageIconUrl>https://raw.githubusercontent.com/wherewhere/Indexerable/main/nuget.png</PackageIconUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/wherewhere/Indexerable</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>https://github.com/wherewhere/Indexerable/releases</PackageReleaseNotes>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/wherewhere/Indexerable</RepositoryUrl>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <VersionPrefix>0.0.1</VersionPrefix>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IsTestProject Condition="'$(IsTestProject)' == ''">$(MSBuildProjectName.Contains('.Test'))</IsTestProject>
+  </PropertyGroup>
+
+</Project>
