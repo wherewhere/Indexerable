@@ -11,7 +11,7 @@ namespace Indexer.Linq
             long max = ((long)start) + count - 1;
             if (count < 0 || max > int.MaxValue)
             {
-                ThrowArgumentOutOfRangeException(nameof(count));
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(count));
             }
             return count > 0 ? new RangeIndexer(start, count) : [];
         }

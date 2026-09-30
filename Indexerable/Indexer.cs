@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 
 namespace Indexer.Linq
 {
@@ -44,15 +43,5 @@ namespace Indexer.Linq
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
-
-        private sealed partial class ReadOnlyReader<TSource>(IReadOnlyList<TSource> source) : Indexer<TSource>
-        {
-            public override TSource this[int index] => source[index];
-
-            public override int Count => source.Count;
-        }
-
-        [DoesNotReturn]
-        private static void ThrowArgumentOutOfRangeException(string name) => throw new ArgumentOutOfRangeException(name);
     }
 }

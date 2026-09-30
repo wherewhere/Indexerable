@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Indexer.Linq
 {
@@ -19,7 +18,7 @@ namespace Indexer.Linq
         }
 
         /// <summary>
-        /// An iterator that yields the items of an <see cref="IEnumerable{TSource}"/> in reverse.
+        /// An iterator that yields the items of an <see cref="IReadOnlyList{TSource}"/> in reverse.
         /// </summary>
         /// <typeparam name="TSource">The type of the source enumerable.</typeparam>
         private sealed partial class ReverseIndexer<TSource>(IReadOnlyList<TSource> source) : Indexer<TSource>

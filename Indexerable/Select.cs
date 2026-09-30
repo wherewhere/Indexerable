@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Indexer.Linq
 {
@@ -14,7 +13,7 @@ namespace Indexer.Linq
         }
 
         /// <summary>
-        /// An iterator that maps each item of an <see cref="IEnumerable{TSource}"/>.
+        /// An iterator that maps each item of an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
         /// <typeparam name="TSource">The type of the source enumerable.</typeparam>
         /// <typeparam name="TResult">The type of the mapped items.</typeparam>
