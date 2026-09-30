@@ -21,7 +21,38 @@ namespace Indexer.Linq
 
         private sealed partial class InfiniteSequenceIndexer<T>(T start, T step) : IReadOnlyList<T> where T : INumberBase<T>
         {
-            public T this[int index] => index >= 0 ? start + (step * T.CreateTruncating(index)) : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative.");
+            public T this[int index]
+            {
+                get
+                {
+                    if (index < 0)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative.");
+                    }
+                    else
+                    {
+#if NET9_0_OR_GREATER
+                        T result = T.MultiplyAddEstimate(step, T.CreateTruncating(index), start);
+                        if (!T.IsInfinity(result))
+                        {
+                            return result;
+                        }
+#else
+                        T mult = step * T.CreateTruncating(index);
+                        if (!T.IsInfinity(mult))
+                        {
+                            return start + mult;
+                        }
+#endif
+                        T temp = start;
+                        for (int i = 0; i < index; i++)
+                        {
+                            temp += step;
+                        }
+                        return temp;
+                    }
+                }
+            }
 
             public int Count => int.MaxValue;
 

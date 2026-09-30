@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Indexer.Linq
 {
@@ -33,15 +34,35 @@ namespace Indexer.Linq
 
             public abstract int Count { get; }
 
-            public virtual IEnumerator<TSource> GetEnumerator()
-            {
-                for (int i = 0; i < Count; i++)
-                {
-                    yield return this[i];
-                }
-            }
+            public virtual IEnumerator<TSource> GetEnumerator() => new IndexerEnumerator(this);
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+            private sealed class IndexerEnumerator(Indexer<TSource> source) : IEnumerator<TSource>
+            {
+                private int _index = -1;
+
+                public TSource Current => source[_index];
+
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                public bool MoveNext()
+                {
+                    int index = _index + 1, count = source.Count;
+                    if (index < count)
+                    {
+                        _index = index;
+                        return true;
+                    }
+                    _index = count;
+                    return false;
+                }
+
+                public void Reset() => _index = -1;
+
+                object? IEnumerator.Current => Current;
+
+                void IDisposable.Dispose() { }
+            }
         }
     }
 }

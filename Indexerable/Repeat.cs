@@ -9,7 +9,12 @@ namespace Indexer.Linq
         public static IReadOnlyList<TResult> Repeat<TResult>(TResult element, int count)
         {
             ArgumentOutOfRangeException.ThrowIfNegative(count);
-            return count > 0 ? new RepeatIndexer<TResult>(element, count) : [];
+            return count switch
+            {
+                0 => (TResult[])[],
+                1 => (TResult[])[element],
+                _ => new RepeatIndexer<TResult>(element, count),
+            };
         }
 
         /// <summary>

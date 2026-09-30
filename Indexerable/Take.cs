@@ -8,7 +8,7 @@ namespace Indexer.Linq
         public static IReadOnlyList<TSource> Take<TSource>(this IReadOnlyList<TSource> source, int count)
         {
             ArgumentNullException.ThrowIfNull(source);
-            return count > 0 ? new TakeIndexer<TSource>(source, count) : [];
+            return count > 0 ? new TakeIndexer<TSource>(source, count) : (TSource[])[];
         }
 
         private sealed partial class TakeIndexer<TSource>(IReadOnlyList<TSource> source, int count) : Indexer<TSource>
@@ -33,10 +33,10 @@ namespace Indexer.Linq
         public static IReadOnlyList<TSource> Take<TSource>(this IReadOnlyList<TSource> source, Range range)
         {
             ArgumentNullException.ThrowIfNull(source);
-            return new RangeIndexer<TSource>(source, range);
+            return new TakeRangeIndexer<TSource>(source, range);
         }
 
-        private sealed partial class RangeIndexer<TSource>(IReadOnlyList<TSource> source, Range range) : Indexer<TSource>
+        private sealed partial class TakeRangeIndexer<TSource>(IReadOnlyList<TSource> source, Range range) : Indexer<TSource>
         {
             private int GetCount(out int offset)
             {
@@ -57,7 +57,7 @@ namespace Indexer.Linq
         public static IReadOnlyList<TSource> TakeLast<TSource>(this IReadOnlyList<TSource> source, int count)
         {
             ArgumentNullException.ThrowIfNull(source);
-            return count > 0 ? new TakeLastIndexer<TSource>(source, count) : [];
+            return count > 0 ? new TakeLastIndexer<TSource>(source, count) : (TSource[])[];
         }
 
         private sealed partial class TakeLastIndexer<TSource>(IReadOnlyList<TSource> source, int count) : Indexer<TSource>

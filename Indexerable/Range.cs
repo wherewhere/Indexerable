@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -13,17 +14,33 @@ namespace Indexer.Linq
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(count));
             }
-            return count > 0 ? new RangeIndexer(start, count) : [];
+            return count > 0 ? new RangeIndexer(start, count) : (int[])[];
         }
 
         /// <summary>
         /// An iterator that yields a range of consecutive integers.
         /// </summary>
         [DebuggerDisplay("Count = {Count}")]
-        private sealed partial class RangeIndexer(int start, int count) : Indexer<int>
+        private sealed partial class RangeIndexer(int start, int count) : IReadOnlyList<int>
         {
-            public override int this[int index] => index >= 0 && index < count ? start + index : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
-            public override int Count => count;
+            public int this[int index] =>
+                index >= 0 && index < count
+                    ? start + index
+                    : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
+
+            public int Count => count;
+
+            public IEnumerator<int> GetEnumerator()
+            {
+                int i = count;
+                for (int current = start; i > 0; i--)
+                {
+                    yield return current;
+                    current++;
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }
