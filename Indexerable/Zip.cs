@@ -7,9 +7,9 @@ namespace Indexer.Linq
     {
         public static IReadOnlyList<TResult> Zip<TFirst, TSecond, TResult>(this IReadOnlyList<TFirst> first, IReadOnlyList<TSecond> second, Func<TFirst, TSecond, TResult> resultSelector)
         {
-            ArgumentNullException.ThrowIfNull(first);
-            ArgumentNullException.ThrowIfNull(second);
-            ArgumentNullException.ThrowIfNull(resultSelector);
+            if (first is null) { ThrowHelper.ThrowArgumentNullException(nameof(first)); }
+            if (second is null) { ThrowHelper.ThrowArgumentNullException(nameof(second)); }
+            if (resultSelector is null) { ThrowHelper.ThrowArgumentNullException(nameof(resultSelector)); }
             return new ZipIndexer<TFirst, TSecond, TResult>(first, second, resultSelector);
         }
 
@@ -19,10 +19,11 @@ namespace Indexer.Linq
             public override int Count => Math.Min(first.Count, second.Count);
         }
 
+#if HAS_VALUETUPLE
         public static IReadOnlyList<(TFirst First, TSecond Second)> Zip<TFirst, TSecond>(this IReadOnlyList<TFirst> first, IReadOnlyList<TSecond> second)
         {
-            ArgumentNullException.ThrowIfNull(first);
-            ArgumentNullException.ThrowIfNull(second);
+            if (first is null) { ThrowHelper.ThrowArgumentNullException(nameof(first)); }
+            if (second is null) { ThrowHelper.ThrowArgumentNullException(nameof(second)); }
             return new ZipToTupleIndexer<TFirst, TSecond>(first, second);
         }
 
@@ -44,9 +45,9 @@ namespace Indexer.Linq
         /// <returns>A sequence of tuples with elements taken from the first, second, and third sequences, in that order.</returns>
         public static IReadOnlyList<(TFirst First, TSecond Second, TThird Third)> Zip<TFirst, TSecond, TThird>(this IReadOnlyList<TFirst> first, IReadOnlyList<TSecond> second, IReadOnlyList<TThird> third)
         {
-            ArgumentNullException.ThrowIfNull(first);
-            ArgumentNullException.ThrowIfNull(second);
-            ArgumentNullException.ThrowIfNull(third);
+            if (first is null) { ThrowHelper.ThrowArgumentNullException(nameof(first)); }
+            if (second is null) { ThrowHelper.ThrowArgumentNullException(nameof(second)); }
+            if (third is null) { ThrowHelper.ThrowArgumentNullException(nameof(third)); }
             return new ZipToTupleIndexer<TFirst, TSecond, TThird>(first, second, third);
         }
 
@@ -55,5 +56,6 @@ namespace Indexer.Linq
             public override (TFirst First, TSecond Second, TThird Third) this[int index] => (first[index], second[index], third[index]);
             public override int Count => Math.Min(first.Count, Math.Min(second.Count, third.Count));
         }
+#endif
     }
 }

@@ -7,8 +7,8 @@ namespace Indexer.Linq
     {
         public static IReadOnlyList<TResult> Select<TSource, TResult>(this IReadOnlyList<TSource> source, Func<TSource, TResult> selector)
         {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(selector);
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
+            if (selector is null) { ThrowHelper.ThrowArgumentNullException(nameof(selector)); }
             return source is ISelect<TSource> select
                 ? select.Select(selector) : new IReadOnlyListSelectIndexer<TSource, TResult>(source, selector);
         }
@@ -33,8 +33,8 @@ namespace Indexer.Linq
 
         public static IReadOnlyList<TResult> Select<TSource, TResult>(this IReadOnlyList<TSource> source, Func<TSource, int, TResult> selector)
         {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(selector);
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
+            if (selector is null) { ThrowHelper.ThrowArgumentNullException(nameof(selector)); }
             return source is ISelectWithIndex<TSource> select
                 ? select.Select(selector) : new IReadOnlyListSelectWithIndexIndexer<TSource, TResult>(source, selector);
         }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if HAS_VALUETUPLE
+using System;
 using System.Collections.Generic;
 
 namespace Indexer.Linq
@@ -12,7 +13,7 @@ namespace Indexer.Linq
         /// <exception cref="ArgumentNullException"><paramref name="source" /> is <see langword="null" />.</exception>
         public static IReadOnlyList<(int Index, TSource Item)> Index<TSource>(this IReadOnlyList<TSource> source)
         {
-            ArgumentNullException.ThrowIfNull(source);
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return new IndexIndexer<TSource>(source);
         }
 
@@ -23,3 +24,4 @@ namespace Indexer.Linq
         }
     }
 }
+#endif

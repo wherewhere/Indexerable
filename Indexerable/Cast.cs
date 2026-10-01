@@ -9,9 +9,8 @@ namespace Indexer.Linq
     {
         public static IReadOnlyList<TResult> Cast<TResult>(this IList source)
         {
-            if (source is IReadOnlyList<TResult> typedSource)
-            { return typedSource; }
-            ArgumentNullException.ThrowIfNull(source);
+            if (source is IReadOnlyList<TResult> typedSource) { return typedSource; }
+            else if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return source is Array { Rank: > 1 } array ? new ArrayCastIndexer<TResult>(array) : new CastIndexer<TResult>(source);
         }
 
@@ -23,9 +22,8 @@ namespace Indexer.Linq
 
         public static IReadOnlyList<TResult> Cast<TSource, TResult>(this IReadOnlyList<TSource> source)
         {
-            if (source is IReadOnlyList<TResult> typedSource)
-            { return typedSource; }
-            ArgumentNullException.ThrowIfNull(source);
+            if (source is IReadOnlyList<TResult> typedSource) { return typedSource; }
+            else if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return source is Array { Rank: > 1 } array ? new ArrayCastIndexer<TResult>(array) : new CastIndexer<TSource, TResult>(source);
         }
 

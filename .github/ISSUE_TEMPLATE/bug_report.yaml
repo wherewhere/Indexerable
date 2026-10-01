@@ -38,9 +38,24 @@ body:
       description: Please specify the .NET Platform you're using when you encountered the issue.
       multiple: true
       options:
+        - .NET Framework 4.5.x
+        - .NET Framework 4.6.x
+        - .NET Framework 4.7.x
+        - .NET Framework 4.8.x
+        - .NET Standard 1.x
+        - .NET Standard 2.x
+        - .NET Core 4.5.x
+        - .NET Core 5.0
+        - .NET Core App 1.x
+        - .NET Core App 2.x
+        - .NET Core App 3.x
+        - .NET 5
+        - .NET 6
+        - .NET 7
         - .NET 8
         - .NET 9
         - .NET 10
+        - .NET 11
         - Others
   - type: dropdown
     attributes:
@@ -51,6 +66,11 @@ body:
         - Visual Studio Insiders
         - Visual Studio 2026
         - Visual Studio 2022
+        - Visual Studio 2019
+        - Visual Studio 2017
+        - Visual Studio 2015
+        - Visual Studio 2013
+        - Visual Studio 2012
         - Other
   - type: textarea
     attributes:

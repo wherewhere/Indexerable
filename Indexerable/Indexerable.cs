@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 
 namespace Indexer.Linq
@@ -10,13 +9,13 @@ namespace Indexer.Linq
 
         public static IReadOnlyList<TSource> ToReadOnlyList<TSource>(this IList<TSource> source)
         {
-            ArgumentNullException.ThrowIfNull(source);
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return source is IReadOnlyList<TSource> typedSource ? typedSource : new ReadOnlyListIndexer<TSource>(source);
         }
 
         public static IReadOnlyList<char> ToReadOnlyList(this string source)
         {
-            ArgumentNullException.ThrowIfNull(source);
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return new ReadOnlyStringIndexer(source);
         }
 
@@ -35,7 +34,11 @@ namespace Indexer.Linq
         {
             public char this[int index] => source[index];
             public int Count => source.Length;
+#if !NETSTANDARD || NETSTANDARD1_2_OR_GREATER
             public IEnumerator<char> GetEnumerator() => ((IEnumerable<char>)source).GetEnumerator();
+#else
+            public IEnumerator<char> GetEnumerator() => ((IEnumerable<char>)source.ToCharArray()).GetEnumerator();
+#endif
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
             public override string ToString() => source;
         }

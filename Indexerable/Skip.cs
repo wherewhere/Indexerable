@@ -8,7 +8,7 @@ namespace Indexer.Linq
     {
         public static IReadOnlyList<TSource> Skip<TSource>(this IReadOnlyList<TSource> source, int count)
         {
-            ArgumentNullException.ThrowIfNull(source);
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return count <= 0 ? source
                 : source is ISkip<TSource> skip ? skip.Skip(count)
                 : new SkipIndexer<TSource>(source, count);
@@ -43,7 +43,7 @@ namespace Indexer.Linq
 
         public static IReadOnlyList<TSource> SkipLast<TSource>(this IReadOnlyList<TSource> source, int count)
         {
-            ArgumentNullException.ThrowIfNull(source);
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return count <= 0 ? source
                 : source is ISkipLast<TSource> skip ? skip.SkipLast(count)
                 : new SkipLastIndexer<TSource>(source, count);

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 
 namespace Indexer.Linq
 {
@@ -8,8 +7,8 @@ namespace Indexer.Linq
     {
         public static int IndexOf<TSource>(this IReadOnlyList<TSource> source, TSource value)
         {
-            ArgumentNullException.ThrowIfNull(source);
-            if (source is List<TSource> list)
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
+            else if (source is List<TSource> list)
             {
                 return list.IndexOf(value);
             }
@@ -28,16 +27,18 @@ namespace Indexer.Linq
 
         public static int IndexOf<TSource>(this IReadOnlyList<TSource> source, Func<TSource, bool> predicate)
         {
-            ArgumentNullException.ThrowIfNull(source);
-            ArgumentNullException.ThrowIfNull(predicate);
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
+            if (predicate is null) { ThrowHelper.ThrowArgumentNullException(nameof(predicate)); }
             switch (source)
             {
                 case List<TSource> list:
                     return list.FindIndex(predicate.Invoke);
                 case TSource[] array:
                     return Array.FindIndex(array, predicate.Invoke);
-                case ImmutableList<TSource> immutableList:
+#if NETCOREAPP || NETCORE5_0
+                case System.Collections.Immutable.ImmutableList<TSource> immutableList:
                     return immutableList.FindIndex(predicate.Invoke);
+#endif
                 default:
                     for (int i = 0; i < source.Count; i++)
                     {

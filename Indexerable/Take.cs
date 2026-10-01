@@ -8,7 +8,7 @@ namespace Indexer.Linq
     {
         public static IReadOnlyList<TSource> Take<TSource>(this IReadOnlyList<TSource> source, int count)
         {
-            ArgumentNullException.ThrowIfNull(source);
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return count <= 0 ? (TSource[])[]
                 : source is ITake<TSource> take ? take.Take(count)
                 : new TakeIndexer<TSource>(source, count);
@@ -41,6 +41,7 @@ namespace Indexer.Linq
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
+#if COMP_NETSTANDARD2_1
         /// <summary>Returns a specified range of contiguous elements from a sequence.</summary>
         /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
         /// <param name="source">The sequence to return elements from.</param>
@@ -53,7 +54,7 @@ namespace Indexer.Linq
         /// </remarks>
         public static IReadOnlyList<TSource> Take<TSource>(this IReadOnlyList<TSource> source, Range range)
         {
-            ArgumentNullException.ThrowIfNull(source);
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return new TakeRangeIndexer<TSource>(source, range);
         }
 
@@ -85,10 +86,11 @@ namespace Indexer.Linq
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
+#endif
 
         public static IReadOnlyList<TSource> TakeLast<TSource>(this IReadOnlyList<TSource> source, int count)
         {
-            ArgumentNullException.ThrowIfNull(source);
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return count <= 0 ? (TSource[])[]
                 : source is ITakeLast<TSource> take ? take.TakeLast(count)
                 : new TakeLastIndexer<TSource>(source, count);

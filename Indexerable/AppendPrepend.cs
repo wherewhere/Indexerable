@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 
 namespace Indexer.Linq
@@ -8,7 +7,7 @@ namespace Indexer.Linq
     {
         public static IReadOnlyList<TSource> Append<TSource>(this IReadOnlyList<TSource> source, TSource element)
         {
-            ArgumentNullException.ThrowIfNull(source);
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return source is IAppend<TSource> append
                 ? append.Append(element) : new AppendIndexer<TSource>(source, element);
         }
@@ -82,7 +81,7 @@ namespace Indexer.Linq
 
         public static IReadOnlyList<TSource> Prepend<TSource>(this IReadOnlyList<TSource> source, TSource element)
         {
-            ArgumentNullException.ThrowIfNull(source);
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return source is IPrepend<TSource> prepend
                 ? prepend.Prepend(element) : new PrependIndexer<TSource>(source, element);
         }

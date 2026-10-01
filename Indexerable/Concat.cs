@@ -9,8 +9,8 @@ namespace Indexer.Linq
     {
         public static IReadOnlyList<TSource> Concat<TSource>(this IReadOnlyList<TSource> first, IReadOnlyList<TSource> second)
         {
-            ArgumentNullException.ThrowIfNull(first);
-            ArgumentNullException.ThrowIfNull(second);
+            if (first is null) { ThrowHelper.ThrowArgumentNullException(nameof(first)); }
+            if (second is null) { ThrowHelper.ThrowArgumentNullException(nameof(second)); }
             return new ConcatIndexer<TSource>(first, second);
         }
 

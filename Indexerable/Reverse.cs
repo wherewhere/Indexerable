@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Indexer.Linq
 {
@@ -13,7 +12,7 @@ namespace Indexer.Linq
         /// <returns>A sequence that enumerates the elements of <paramref name="source"/> in reverse.</returns>
         public static IReadOnlyList<TSource> Reverse<TSource>(this IReadOnlyList<TSource> source)
         {
-            ArgumentNullException.ThrowIfNull(source);
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return new ReverseIndexer<TSource>(source);
         }
 

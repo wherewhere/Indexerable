@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NET7_0_OR_GREATER
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
@@ -14,8 +15,8 @@ namespace Indexer.Linq
         /// <returns>An <see cref="IReadOnlyList{T}"/> that contains the sequence.</returns>
         public static IReadOnlyList<T> InfiniteSequence<T>(T start, T step) where T : INumberBase<T>
         {
-            ArgumentNullException.ThrowIfNull(start);
-            ArgumentNullException.ThrowIfNull(step);
+            if (start is null) { ThrowHelper.ThrowArgumentNullException(nameof(start)); }
+            if (step is null) { ThrowHelper.ThrowArgumentNullException(nameof(step)); }
             return new InfiniteSequenceIndexer<T>(start, step);
         }
 
@@ -70,3 +71,4 @@ namespace Indexer.Linq
         }
     }
 }
+#endif

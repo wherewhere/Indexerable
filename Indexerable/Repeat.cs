@@ -8,7 +8,7 @@ namespace Indexer.Linq
     {
         public static IReadOnlyList<TResult> Repeat<TResult>(TResult element, int count)
         {
-            ArgumentOutOfRangeException.ThrowIfNegative(count);
+            if (count < 0) { ThrowHelper.ThrowArgumentOutOfRangeException(nameof(count)); }
             return count switch
             {
                 0 => (TResult[])[],
