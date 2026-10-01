@@ -14,10 +14,10 @@ namespace Indexer.Linq.Tests
             int[] q = [9999, 0, 888, -1, 66, -777, 1, 2, -12345];
 
             IReadOnlyList<long> rst = q.Cast<long>();
-            Assert.Throws<InvalidCastException>(() => { foreach (long t in rst) {; } });
+            Assert.Throws<InvalidCastException>(() => { foreach (long t in rst) { } });
 
             rst = q.Cast<int, long>();
-            Assert.Throws<InvalidCastException>(() => { foreach (long t in rst) {; } });
+            Assert.Throws<InvalidCastException>(() => { foreach (long t in rst) { } });
         }
 
         [Fact]
@@ -26,10 +26,10 @@ namespace Indexer.Linq.Tests
             byte[] q = [0, 255, 127, 128, 1, 33, 99];
 
             IReadOnlyList<ushort> rst = q.Cast<ushort>();
-            Assert.Throws<InvalidCastException>(() => { foreach (ushort t in rst) {; } });
+            Assert.Throws<InvalidCastException>(() => { foreach (ushort t in rst) { } });
 
             rst = q.Cast<byte, ushort>();
-            Assert.Throws<InvalidCastException>(() => { foreach (ushort t in rst) {; } });
+            Assert.Throws<InvalidCastException>(() => { foreach (ushort t in rst) { } });
         }
 
         [Fact]

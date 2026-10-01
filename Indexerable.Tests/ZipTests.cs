@@ -65,7 +65,6 @@ namespace Indexer.Linq.Tests
             Assert.Equal(expected, first.Zip(second, func));
         }
 
-
         [Fact]
         public void FirstEmptySecondSingle()
         {
@@ -87,7 +86,6 @@ namespace Indexer.Linq.Tests
 
             Assert.Equal(expected, first.Zip(second, func));
         }
-
 
         [Fact]
         public void SecondEmptyFirstSingle()
@@ -144,7 +142,6 @@ namespace Indexer.Linq.Tests
             Assert.Equal(expected, first.Zip(second, func));
         }
 
-
         [Fact]
         public void SecondManyMoreThanFirst()
         {
@@ -167,7 +164,6 @@ namespace Indexer.Linq.Tests
             Assert.Equal(expected, first.Zip(second, func));
         }
 
-
         [Fact]
         public void FirstManyMoreThanSecond()
         {
@@ -178,7 +174,6 @@ namespace Indexer.Linq.Tests
 
             Assert.Equal(expected, first.Zip(second, func));
         }
-
 
         [Fact]
         public void DelegateFuncChanged()
@@ -308,7 +303,6 @@ namespace Indexer.Linq.Tests
 
             Assert.Equal(expected, first.Zip(second, func));
         }
-
 
         [Fact]
         public void FirstSameSizeSecondAllNull()
@@ -458,7 +452,6 @@ namespace Indexer.Linq.Tests
 
             Assert.Equal(expected, first.Zip(second));
         }
-
 
         [Fact]
         public void Zip2_SecondManyMoreThanFirst()
