@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Indexer.Linq
@@ -8,16 +9,36 @@ namespace Indexer.Linq
         public static IReadOnlyList<TSource> Take<TSource>(this IReadOnlyList<TSource> source, int count)
         {
             ArgumentNullException.ThrowIfNull(source);
-            return count > 0 ? new TakeIndexer<TSource>(source, count) : (TSource[])[];
+            return count <= 0 ? (TSource[])[]
+                : source is ITake<TSource> take ? take.Take(count)
+                : new TakeIndexer<TSource>(source, count);
         }
 
-        private sealed partial class TakeIndexer<TSource>(IReadOnlyList<TSource> source, int count) : Indexer<TSource>
+        private interface ITake<TSource> : IReadOnlyList<TSource>
         {
-            public override TSource this[int index] =>
+            IReadOnlyList<TSource> Take(int count);
+        }
+
+        private sealed partial class TakeIndexer<TSource>(IReadOnlyList<TSource> source, int count) : ITake<TSource>
+        {
+            public TSource this[int index] =>
                 index >= 0 && index < Count
                     ? source[index]
                     : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
-            public override int Count => Math.Min(count, source.Count);
+
+            public int Count => Math.Min(count, source.Count);
+
+            public IReadOnlyList<TSource> Take(int _count) => _count <= 0 ? (TSource[])[] : new TakeIndexer<TSource>(source, Math.Min(_count, count));
+
+            public IEnumerator<TSource> GetEnumerator()
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    yield return source[i];
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         /// <summary>Returns a specified range of contiguous elements from a sequence.</summary>
@@ -36,7 +57,7 @@ namespace Indexer.Linq
             return new TakeRangeIndexer<TSource>(source, range);
         }
 
-        private sealed partial class TakeRangeIndexer<TSource>(IReadOnlyList<TSource> source, Range range) : Indexer<TSource>
+        private sealed partial class TakeRangeIndexer<TSource>(IReadOnlyList<TSource> source, Range range) : IReadOnlyList<TSource>
         {
             private int GetCount(out int offset)
             {
@@ -46,23 +67,41 @@ namespace Indexer.Linq
                 return end > offset ? end - offset : 0;
             }
 
-            public override TSource this[int index] =>
+            public TSource this[int index] =>
                 index >= 0 && index < GetCount(out int offset)
                     ? source[offset + index]
                     : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
 
-            public override int Count => GetCount(out _);
+            public int Count => GetCount(out _);
+
+            public IEnumerator<TSource> GetEnumerator()
+            {
+                int count = GetCount(out int offset);
+                for (int i = 0; i < count; i++)
+                {
+                    yield return source[offset + i];
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         public static IReadOnlyList<TSource> TakeLast<TSource>(this IReadOnlyList<TSource> source, int count)
         {
             ArgumentNullException.ThrowIfNull(source);
-            return count > 0 ? new TakeLastIndexer<TSource>(source, count) : (TSource[])[];
+            return count <= 0 ? (TSource[])[]
+                : source is ITakeLast<TSource> take ? take.TakeLast(count)
+                : new TakeLastIndexer<TSource>(source, count);
         }
 
-        private sealed partial class TakeLastIndexer<TSource>(IReadOnlyList<TSource> source, int count) : Indexer<TSource>
+        private interface ITakeLast<TSource> : IReadOnlyList<TSource>
         {
-            public override TSource this[int index]
+            IReadOnlyList<TSource> TakeLast(int count);
+        }
+
+        private sealed partial class TakeLastIndexer<TSource>(IReadOnlyList<TSource> source, int count) : ITakeLast<TSource>
+        {
+            public TSource this[int index]
             {
                 get
                 {
@@ -72,7 +111,21 @@ namespace Indexer.Linq
                         : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
                 }
             }
-            public override int Count => Math.Min(count, source.Count);
+
+            public int Count => Math.Min(count, source.Count);
+
+            public IReadOnlyList<TSource> TakeLast(int _count) => _count <= 0 ? (TSource[])[] : new TakeLastIndexer<TSource>(source, Math.Min(_count, count));
+
+            public IEnumerator<TSource> GetEnumerator()
+            {
+                int takeCount;
+                for (int i = 0; i < (takeCount = Count); i++)
+                {
+                    yield return source[source.Count - takeCount + i];
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

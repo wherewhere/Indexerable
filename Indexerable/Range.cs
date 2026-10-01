@@ -21,7 +21,7 @@ namespace Indexer.Linq
         /// An iterator that yields a range of consecutive integers.
         /// </summary>
         [DebuggerDisplay("Count = {Count}")]
-        private sealed partial class RangeIndexer(int start, int count) : IReadOnlyList<int>
+        private sealed partial class RangeIndexer(int start, int count) : ITake<int>
         {
             public int this[int index] =>
                 index >= 0 && index < count
@@ -29,6 +29,8 @@ namespace Indexer.Linq
                     : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
 
             public int Count => count;
+
+            public IReadOnlyList<int> Take(int _count) => _count <= 0 ? (int[])[] : new RangeIndexer(start, Math.Min(_count, count));
 
             public IEnumerator<int> GetEnumerator()
             {
