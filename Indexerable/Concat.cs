@@ -7,6 +7,14 @@ namespace Indexer.Linq
 {
     public static partial class Indexerable
     {
+        /// <summary>
+        /// Concatenates two read-only lists.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements of the input lists.</typeparam>
+        /// <param name="first">The first list to concatenate.</param>
+        /// <param name="second">The list to concatenate after <paramref name="first"/>.</param>
+        /// <returns>A read-only list that contains the elements of <paramref name="first"/> followed by the elements of <paramref name="second"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="first"/> or <paramref name="second"/> is <see langword="null"/>.</exception>
         public static IReadOnlyList<TSource> Concat<TSource>(this IReadOnlyList<TSource> first, IReadOnlyList<TSource> second)
         {
             if (first is null) { ThrowHelper.ThrowArgumentNullException(nameof(first)); }
@@ -16,13 +24,14 @@ namespace Indexer.Linq
 
         private interface IConcat<TSource> : IReadOnlyList<TSource>
         {
+            /// <inheritdoc cref="Concat{TSource}(IReadOnlyList{TSource}, IReadOnlyList{TSource})"/>
             IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second);
         }
 
         /// <summary>
         /// Represents the concatenation of two <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
-        /// <typeparam name="TSource">The type of the source enumerables.</typeparam>
+        /// <typeparam name="TSource">The type of the elements of the source lists.</typeparam>
         private sealed partial class ConcatIndexer<TSource>(IReadOnlyList<TSource> first, IReadOnlyList<TSource> second) : IConcat<TSource>
         {
             public TSource this[int index]
@@ -56,15 +65,8 @@ namespace Indexer.Linq
         /// <summary>
         /// Represents the concatenation of three or more <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
-        /// <typeparam name="TSource">The type of the source enumerables.</typeparam>
-        /// <remarks>
-        /// To handle chains of >= 3 sources, we chain the <see cref="Concat"/> iterators together and allow
-        /// <see cref="GetEnumerable"/> to fetch enumerables from the previous sources.  This means that rather
-        /// than each <see cref="IEnumerator.MoveNext"/> and <see cref="IEnumerator{T}.Current"/> calls having to traverse all of the previous
-        /// sources, we only have to traverse all of the previous sources once per chained enumerable.  An alternative
-        /// would be to use an array to store all of the enumerables, but this has a much better memory profile and
-        /// without much additional run-time cost.
-        /// </remarks>
+        /// <typeparam name="TSource">The type of the elements of the source lists.</typeparam>
+        /// <remarks>Chained concatenations retain their source lists and enumerate each source in order.</remarks>
         private sealed partial class ConcatNIndexer<TSource>(IReadOnlyList<TSource> first, params IReadOnlyList<TSource>[] rest) : IConcat<TSource>
         {
             public TSource this[int index]

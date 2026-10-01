@@ -7,6 +7,14 @@ namespace Indexer.Linq
 {
     public static partial class Indexerable
     {
+        /// <summary>
+        /// Casts the elements of a non-generic list to the specified type.
+        /// </summary>
+        /// <typeparam name="TResult">The type to cast the elements of <paramref name="source"/> to.</typeparam>
+        /// <param name="source">The non-generic list whose elements are cast.</param>
+        /// <returns>A read-only list that contains each element of <paramref name="source"/> cast to <typeparamref name="TResult"/>.</returns>
+        /// <exception cref="System.ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
+        /// <exception cref="System.InvalidCastException">An element cannot be cast to <typeparamref name="TResult"/>.</exception>
         public static IReadOnlyList<TResult> Cast<TResult>(this IList source)
         {
             if (source is IReadOnlyList<TResult> typedSource) { return typedSource; }
@@ -20,6 +28,15 @@ namespace Indexer.Linq
             public override int Count => source.Count;
         }
 
+        /// <summary>
+        /// Casts the elements of a read-only list to the specified type.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
+        /// <typeparam name="TResult">The type to cast the elements of <paramref name="source"/> to.</typeparam>
+        /// <param name="source">The read-only list whose elements are cast.</param>
+        /// <returns>A read-only list that contains each element of <paramref name="source"/> cast to <typeparamref name="TResult"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
+        /// <exception cref="InvalidCastException">An element cannot be cast to <typeparamref name="TResult"/>.</exception>
         public static IReadOnlyList<TResult> Cast<TSource, TResult>(this IReadOnlyList<TSource> source)
         {
             if (source is IReadOnlyList<TResult> typedSource) { return typedSource; }

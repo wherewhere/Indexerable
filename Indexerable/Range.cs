@@ -7,6 +7,13 @@ namespace Indexer.Linq
 {
     public static partial class Indexerable
     {
+        /// <summary>
+        /// Generates a read-only list of sequential integers within a specified range.
+        /// </summary>
+        /// <param name="start">The value of the first integer in the list.</param>
+        /// <param name="count">The number of sequential integers to generate.</param>
+        /// <returns>A read-only list containing <paramref name="count"/> sequential integers starting at <paramref name="start"/>.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> is less than zero, or the last value in the range is greater than <see cref="int.MaxValue"/>.</exception>
         public static IReadOnlyList<int> Range(int start, int count)
         {
             long max = ((long)start) + count - 1;

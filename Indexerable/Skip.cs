@@ -6,6 +6,15 @@ namespace Indexer.Linq
 {
     public static partial class Indexerable
     {
+        /// <summary>
+        /// Bypasses a specified number of elements in a read-only list and returns the remaining elements.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
+        /// <param name="source">The list to return elements from.</param>
+        /// <param name="count">The number of elements to skip before returning the remaining elements.</param>
+        /// <returns>A read-only list that contains the elements that occur after the specified number of elements in <paramref name="source"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
+        /// <remarks>If <paramref name="count"/> is less than or equal to zero, all elements of <paramref name="source"/> are returned. If <paramref name="source"/> contains fewer than <paramref name="count"/> elements, the result is empty.</remarks>
         public static IReadOnlyList<TSource> Skip<TSource>(this IReadOnlyList<TSource> source, int count)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
@@ -16,6 +25,7 @@ namespace Indexer.Linq
 
         private interface ISkip<TSource> : IReadOnlyList<TSource>
         {
+            /// <inheritdoc cref="Skip{TSource}(IReadOnlyList{TSource}, int)"/>
             IReadOnlyList<TSource> Skip(int count);
         }
 
@@ -41,6 +51,15 @@ namespace Indexer.Linq
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
+        /// <summary>
+        /// Bypasses a specified number of elements at the end of a read-only list and returns the remaining elements.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
+        /// <param name="source">The list to return elements from.</param>
+        /// <param name="count">The number of elements to skip from the end of the list.</param>
+        /// <returns>A read-only list that contains the elements of <paramref name="source"/> except for the specified number of elements at the end.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
+        /// <remarks>If <paramref name="count"/> is less than or equal to zero, all elements of <paramref name="source"/> are returned. If <paramref name="count"/> is greater than or equal to the number of elements in <paramref name="source"/>, the result is empty.</remarks>
         public static IReadOnlyList<TSource> SkipLast<TSource>(this IReadOnlyList<TSource> source, int count)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
@@ -51,6 +70,7 @@ namespace Indexer.Linq
 
         private interface ISkipLast<TSource> : IReadOnlyList<TSource>
         {
+            /// <inheritdoc cref="SkipLast{TSource}(IReadOnlyList{TSource}, int)"/>
             IReadOnlyList<TSource> SkipLast(int count);
         }
 

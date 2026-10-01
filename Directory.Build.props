@@ -6,23 +6,27 @@
     <Copyright>Copyright © 2017 - 2026 wherewhere. All Rights Reserved.</Copyright>
     <Deterministic>true</Deterministic>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <IncludeSymbols>True</IncludeSymbols>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSymbols>true</IncludeSymbols>
     <LangVersion>latest</LangVersion>
+    <PackageIconUrl>https://raw.githubusercontent.com/wherewhere/Indexerable/main/logo.png</PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/wherewhere/Indexerable</PackageProjectUrl>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes>https://github.com/wherewhere/Indexerable/releases</PackageReleaseNotes>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageTags>LINQ;IReadOnlyList;Sequences;Lazy;Indexer</PackageTags>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/wherewhere/Indexerable</RepositoryUrl>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Title>Indexerable - LINQ for IReadOnlyList</Title>
     <VersionPrefix>0.0.1</VersionPrefix>
+    <Description>LINQ-style operators for IReadOnlyList collections, with lazy evaluation and indexed access.</Description>
   </PropertyGroup>
 
   <PropertyGroup>
-    <FullTargets Condition="'$(FullTargets)' == ''">False</FullTargets>
-    <IsWindows Condition="'$(IsWindows)' == ''">False</IsWindows>
-    <IsWindows Condition="$([MSBuild]::IsOSPlatform('Windows')) == 'True' OR '$(Platform)' == 'Windows NT'">True</IsWindows>
+    <FullTargets Condition="'$(FullTargets)' == ''">false</FullTargets>
+    <IsWindows Condition="'$(IsWindows)' == ''">false</IsWindows>
+    <IsWindows Condition="$([MSBuild]::IsOSPlatform('Windows')) == 'true' OR '$(Platform)' == 'Windows NT'">true</IsWindows>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFramework)' == 'native'">

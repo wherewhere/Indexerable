@@ -5,11 +5,12 @@ namespace Indexer.Linq
     public static partial class Indexerable
     {
         /// <summary>
-        /// Returns a sequence with the elements of <paramref name="source"/> in reverse order.
+        /// Inverts the order of the elements in a read-only list.
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-        /// <param name="source">The sequence whose elements should be reversed.</param>
-        /// <returns>A sequence that enumerates the elements of <paramref name="source"/> in reverse.</returns>
+        /// <param name="source">The list whose elements should be returned in reverse order.</param>
+        /// <returns>A read-only list whose elements correspond to those of <paramref name="source"/> in reverse order.</returns>
+        /// <exception cref="System.ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
         public static IReadOnlyList<TSource> Reverse<TSource>(this IReadOnlyList<TSource> source)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
@@ -19,7 +20,7 @@ namespace Indexer.Linq
         /// <summary>
         /// An iterator that yields the items of an <see cref="IReadOnlyList{TSource}"/> in reverse.
         /// </summary>
-        /// <typeparam name="TSource">The type of the source enumerable.</typeparam>
+        /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
         private sealed partial class ReverseIndexer<TSource>(IReadOnlyList<TSource> source) : Indexer<TSource>
         {
             public override TSource this[int index] => source[Count - 1 - index];

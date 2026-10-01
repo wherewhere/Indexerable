@@ -6,10 +6,12 @@ namespace Indexer.Linq
 {
     public static partial class Indexerable
     {
-        /// <summary>Returns an enumerable that incorporates the element's index into a tuple.</summary>
+        /// <summary>
+        /// Projects each element of a read-only list together with its zero-based index.
+        /// </summary>
         /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
-        /// <param name="source">The source enumerable providing the elements.</param>
-        /// <returns>An enumerable that incorporates each element index into a tuple.</returns>
+        /// <param name="source">The read-only list whose elements and indexes are returned.</param>
+        /// <returns>A read-only list of tuples containing each element's zero-based index and value.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="source" /> is <see langword="null" />.</exception>
         public static IReadOnlyList<(int Index, TSource Item)> Index<TSource>(this IReadOnlyList<TSource> source)
         {

@@ -5,6 +5,17 @@ namespace Indexer.Linq
 {
     public static partial class Indexerable
     {
+        /// <summary>
+        /// Applies a specified function to the corresponding elements of two read-only lists, producing a list of the results.
+        /// </summary>
+        /// <typeparam name="TFirst">The type of the elements of the first list.</typeparam>
+        /// <typeparam name="TSecond">The type of the elements of the second list.</typeparam>
+        /// <typeparam name="TResult">The type of the result returned by <paramref name="resultSelector"/>.</typeparam>
+        /// <param name="first">The first list to merge.</param>
+        /// <param name="second">The second list to merge.</param>
+        /// <param name="resultSelector">A function that specifies how to merge the corresponding elements from the two lists.</param>
+        /// <returns>A read-only list of the results of applying the specified function to the corresponding elements of the two lists. The result ends when either list ends.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="first"/>, <paramref name="second"/>, or <paramref name="resultSelector"/> is <see langword="null"/>.</exception>
         public static IReadOnlyList<TResult> Zip<TFirst, TSecond, TResult>(this IReadOnlyList<TFirst> first, IReadOnlyList<TSecond> second, Func<TFirst, TSecond, TResult> resultSelector)
         {
             if (first is null) { ThrowHelper.ThrowArgumentNullException(nameof(first)); }
@@ -20,6 +31,15 @@ namespace Indexer.Linq
         }
 
 #if HAS_VALUETUPLE
+        /// <summary>
+        /// Produces a list of tuples with elements from two read-only lists.
+        /// </summary>
+        /// <typeparam name="TFirst">The type of the elements of the first list.</typeparam>
+        /// <typeparam name="TSecond">The type of the elements of the second list.</typeparam>
+        /// <param name="first">The first list to merge.</param>
+        /// <param name="second">The second list to merge.</param>
+        /// <returns>A read-only list of tuples containing corresponding elements from the two lists. The result ends when either list ends.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="first"/> or <paramref name="second"/> is <see langword="null"/>.</exception>
         public static IReadOnlyList<(TFirst First, TSecond Second)> Zip<TFirst, TSecond>(this IReadOnlyList<TFirst> first, IReadOnlyList<TSecond> second)
         {
             if (first is null) { ThrowHelper.ThrowArgumentNullException(nameof(first)); }
@@ -34,15 +54,16 @@ namespace Indexer.Linq
         }
 
         /// <summary>
-        /// Produces a sequence of tuples with elements from the three specified sequences.
+        /// Produces a list of tuples with elements from three read-only lists.
         /// </summary>
-        /// <typeparam name="TFirst">The type of the elements of the first input sequence.</typeparam>
-        /// <typeparam name="TSecond">The type of the elements of the second input sequence.</typeparam>
-        /// <typeparam name="TThird">The type of the elements of the third input sequence.</typeparam>
-        /// <param name="first">The first sequence to merge.</param>
-        /// <param name="second">The second sequence to merge.</param>
-        /// <param name="third">The third sequence to merge.</param>
-        /// <returns>A sequence of tuples with elements taken from the first, second, and third sequences, in that order.</returns>
+        /// <typeparam name="TFirst">The type of the elements of the first list.</typeparam>
+        /// <typeparam name="TSecond">The type of the elements of the second list.</typeparam>
+        /// <typeparam name="TThird">The type of the elements of the third list.</typeparam>
+        /// <param name="first">The first list to merge.</param>
+        /// <param name="second">The second list to merge.</param>
+        /// <param name="third">The third list to merge.</param>
+        /// <returns>A read-only list of tuples containing corresponding elements from the three lists. The result ends when any list ends.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="first"/>, <paramref name="second"/>, or <paramref name="third"/> is <see langword="null"/>.</exception>
         public static IReadOnlyList<(TFirst First, TSecond Second, TThird Third)> Zip<TFirst, TSecond, TThird>(this IReadOnlyList<TFirst> first, IReadOnlyList<TSecond> second, IReadOnlyList<TThird> third)
         {
             if (first is null) { ThrowHelper.ThrowArgumentNullException(nameof(first)); }

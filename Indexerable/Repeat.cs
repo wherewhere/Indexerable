@@ -6,6 +6,14 @@ namespace Indexer.Linq
 {
     public static partial class Indexerable
     {
+        /// <summary>
+        /// Generates a read-only list that contains a repeated value.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the value to repeat.</typeparam>
+        /// <param name="element">The value to repeat in the resulting list.</param>
+        /// <param name="count">The number of times to repeat the value.</param>
+        /// <returns>A read-only list that contains <paramref name="element"/> repeated <paramref name="count"/> times.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="count"/> is less than zero.</exception>
         public static IReadOnlyList<TResult> Repeat<TResult>(TResult element, int count)
         {
             if (count < 0) { ThrowHelper.ThrowArgumentOutOfRangeException(nameof(count)); }

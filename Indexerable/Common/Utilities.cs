@@ -3,7 +3,7 @@
 namespace Indexer.Linq
 {
     /// <summary>
-    /// Contains helper methods for System.Linq.
+    /// Contains helper methods for composing selectors used by Indexerable.
     /// </summary>
     internal static class Utilities
     {

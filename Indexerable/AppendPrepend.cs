@@ -5,6 +5,14 @@ namespace Indexer.Linq
 {
     public static partial class Indexerable
     {
+        /// <summary>
+        /// Adds a value to the end of a read-only list.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
+        /// <param name="source">The list to append a value to.</param>
+        /// <param name="element">The value to append to <paramref name="source"/>.</param>
+        /// <returns>A read-only list that contains the elements of <paramref name="source"/> followed by <paramref name="element"/>.</returns>
+        /// <exception cref="System.ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
         public static IReadOnlyList<TSource> Append<TSource>(this IReadOnlyList<TSource> source, TSource element)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
@@ -14,13 +22,14 @@ namespace Indexer.Linq
 
         private interface IAppend<TSource> : IReadOnlyList<TSource>
         {
+            /// <inheritdoc cref="Append{TSource}(IReadOnlyList{TSource}, TSource)"/>
             IReadOnlyList<TSource> Append(TSource element);
         }
 
         /// <summary>
         /// Represents the insertion of one or more items after an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
-        /// <typeparam name="TSource">The type of the source enumerable.</typeparam>
+        /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
         private sealed partial class AppendIndexer<TSource>(IReadOnlyList<TSource> source, TSource element) : IAppendPrepend<TSource>
         {
             public TSource this[int index] => index == source.Count ? element : source[index];
@@ -44,9 +53,9 @@ namespace Indexer.Linq
         }
 
         /// <summary>
-        /// Represents the insertion of multiple items after an <see cref="IEnumerable{TSource}"/>.
+        /// Represents the insertion of multiple items after an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
-        /// <typeparam name="TSource">The type of the source enumerable.</typeparam>
+        /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
         private sealed partial class AppendNIndexer<TSource>(IReadOnlyList<TSource> source, params TSource[] appended) : IAppendPrepend<TSource>
         {
             public TSource this[int index]
@@ -79,6 +88,14 @@ namespace Indexer.Linq
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
+        /// <summary>
+        /// Adds a value to the beginning of a read-only list.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
+        /// <param name="source">The list to prepend a value to.</param>
+        /// <param name="element">The value to prepend to <paramref name="source"/>.</param>
+        /// <returns>A read-only list that contains <paramref name="element"/> followed by the elements of <paramref name="source"/>.</returns>
+        /// <exception cref="System.ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
         public static IReadOnlyList<TSource> Prepend<TSource>(this IReadOnlyList<TSource> source, TSource element)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
@@ -88,13 +105,14 @@ namespace Indexer.Linq
 
         private interface IPrepend<TSource> : IReadOnlyList<TSource>
         {
+            /// <inheritdoc cref="Prepend{TSource}(IReadOnlyList{TSource}, TSource)"/>
             IReadOnlyList<TSource> Prepend(TSource element);
         }
 
         /// <summary>
         /// Represents the insertion of one or more items before an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
-        /// <typeparam name="TSource">The type of the source enumerable.</typeparam>
+        /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
         private sealed partial class PrependIndexer<TSource>(IReadOnlyList<TSource> source, TSource element) : IAppendPrepend<TSource>
         {
             public TSource this[int index] => index == 0 ? element : source[index - 1];
@@ -118,9 +136,9 @@ namespace Indexer.Linq
         }
 
         /// <summary>
-        /// Represents the insertion of multiple items before an <see cref="IEnumerable{TSource}"/>.
+        /// Represents the insertion of multiple items before an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
-        /// <typeparam name="TSource">The type of the source enumerable.</typeparam>
+        /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
         private sealed partial class PrependNIndexer<TSource>(IReadOnlyList<TSource> source, params TSource[] prepended) : IAppendPrepend<TSource>
         {
             public TSource this[int index]
@@ -156,9 +174,9 @@ namespace Indexer.Linq
         private interface IAppendPrepend<TSource> : IAppend<TSource>, IPrepend<TSource>;
 
         /// <summary>
-        /// Represents the insertion of one or more items before or after an <see cref="IEnumerable{TSource}"/>.
+        /// Represents the insertion of one or more items before or after an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
-        /// <typeparam name="TSource">The type of the source enumerable.</typeparam>
+        /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
         private sealed partial class AppendPrependIndexer<TSource>(IReadOnlyList<TSource> source, TSource prepended, TSource appended) : IAppendPrepend<TSource>
         {
             public TSource this[int index] => index == 0 ? prepended : index == source.Count + 1 ? appended : source[index - 1];
@@ -183,9 +201,9 @@ namespace Indexer.Linq
         }
 
         /// <summary>
-        /// Represents the insertion of multiple items before or after an <see cref="IEnumerable{TSource}"/>.
+        /// Represents the insertion of multiple items before or after an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
-        /// <typeparam name="TSource">The type of the source enumerable.</typeparam>
+        /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
         private sealed partial class AppendPrependNIndexer<TSource>(IReadOnlyList<TSource> source, TSource[] prepended, TSource[] appended) : IAppendPrepend<TSource>
         {
             public TSource this[int index]

@@ -6,6 +6,15 @@ namespace Indexer.Linq
 {
     public static partial class Indexerable
     {
+        /// <summary>
+        /// Returns a specified number of contiguous elements from the start of a read-only list.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
+        /// <param name="source">The list to return elements from.</param>
+        /// <param name="count">The number of elements to return.</param>
+        /// <returns>A read-only list that contains up to <paramref name="count"/> elements from the start of <paramref name="source"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
+        /// <remarks>If <paramref name="count"/> is less than or equal to zero, the result is empty.</remarks>
         public static IReadOnlyList<TSource> Take<TSource>(this IReadOnlyList<TSource> source, int count)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
@@ -16,6 +25,7 @@ namespace Indexer.Linq
 
         private interface ITake<TSource> : IReadOnlyList<TSource>
         {
+            /// <inheritdoc cref="Take{TSource}(IReadOnlyList{TSource}, int)"/>
             IReadOnlyList<TSource> Take(int count);
         }
 
@@ -42,15 +52,16 @@ namespace Indexer.Linq
         }
 
 #if COMP_NETSTANDARD2_1
-        /// <summary>Returns a specified range of contiguous elements from a sequence.</summary>
+        /// <summary>
+        /// Returns a specified range of contiguous elements from a read-only list.
+        /// </summary>
         /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
-        /// <param name="source">The sequence to return elements from.</param>
+        /// <param name="source">The list to return elements from.</param>
         /// <param name="range">The range of elements to return, which has start and end indexes either from the start or the end.</param>
         /// <exception cref="ArgumentNullException"><paramref name="source" /> is <see langword="null" />.</exception>
-        /// <returns>An <see cref="IReadOnlyList{T}" /> that contains the specified <paramref name="range" /> of elements from the <paramref name="source" /> sequence.</returns>
+        /// <returns>A read-only list that contains the specified <paramref name="range"/> of elements from <paramref name="source"/>.</returns>
         /// <remarks>
-        /// <para>This method is implemented by using deferred execution. The immediate return value is an object that stores all the information that is required to perform the action. The query represented by this method is not executed until the object is enumerated either by calling its `GetEnumerator` method directly or by using `foreach` in Visual C# or `For Each` in Visual Basic.</para>
-        /// <para><see cref="O:Enumerable.Take" /> enumerates <paramref name="source" /> and yields elements whose indices belong to the specified <paramref name="range"/>.</para>
+        /// <para>The returned list is a view over <paramref name="source"/>; elements are accessed as needed and are not copied.</para>
         /// </remarks>
         public static IReadOnlyList<TSource> Take<TSource>(this IReadOnlyList<TSource> source, Range range)
         {
@@ -88,6 +99,15 @@ namespace Indexer.Linq
         }
 #endif
 
+        /// <summary>
+        /// Returns a specified number of elements from the end of a read-only list.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
+        /// <param name="source">The list to return elements from.</param>
+        /// <param name="count">The number of elements to take from the end of the list.</param>
+        /// <returns>A read-only list that contains up to <paramref name="count"/> elements from the end of <paramref name="source"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
+        /// <remarks>If <paramref name="count"/> is less than or equal to zero, the result is empty.</remarks>
         public static IReadOnlyList<TSource> TakeLast<TSource>(this IReadOnlyList<TSource> source, int count)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
@@ -98,6 +118,7 @@ namespace Indexer.Linq
 
         private interface ITakeLast<TSource> : IReadOnlyList<TSource>
         {
+            /// <inheritdoc cref="TakeLast{TSource}(IReadOnlyList{TSource}, int)"/>
             IReadOnlyList<TSource> TakeLast(int count);
         }
 
