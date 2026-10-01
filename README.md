@@ -2,7 +2,7 @@
 
 [![Issues](https://img.shields.io/github/issues/wherewhere/Indexerable.svg?label=Issues&style=flat-square)](https://github.com/wherewhere/Indexerable/issues)
 [![Stars](https://img.shields.io/github/stars/wherewhere/Indexerable.svg?label=Stars&style=flat-square)](https://github.com/wherewhere/Indexerable/stargazers)
-[![NuGet](https://img.shields.io/nuget/v/Indexerable.svg?logo=NuGet&style=flat-square)](https://www.nuget.org/packages/Indexerable)
+[![NuGet](https://img.shields.io/nuget/dt/Indexerable.svg?logo=NuGet&style=flat-square)](https://www.nuget.org/packages/Indexerable)
 
 Indexerable provides LINQ-style operations for `IReadOnlyList<T>`. Its list-oriented operators let you compose queries while retaining indexed access, without first materializing each intermediate result.
 
