@@ -69,6 +69,17 @@ namespace Indexer.Linq
             return new TakeRangeIndexer<TSource>(source, range);
         }
 
+        ///// <summary>
+        ///// A extension for <see cref="IReadOnlyList{TSource}"/>.
+        ///// </summary>
+        ///// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
+        ///// <param name="source">The list to return elements from.</param>
+        //extension<TSource>(IReadOnlyList<TSource> source)
+        //{
+        //    /// <inheritdoc cref="Take{TSource}(IReadOnlyList{TSource}, System.Range)"/>
+        //    public IReadOnlyList<TSource> this[Range range] => source.Take(range);
+        //}
+
         private sealed partial class TakeRangeIndexer<TSource>(IReadOnlyList<TSource> source, Range range) : IReadOnlyList<TSource>
         {
             private int GetCount(out int offset)

@@ -235,6 +235,16 @@ namespace Indexer.Linq.Tests
         }
 
         [Fact]
+        public void TakeAfterMultiplePrepends()
+        {
+            IReadOnlyList<int> prepended = Indexerable.Range(0, 3).Prepend(-2).Prepend(-1);
+            Assert.Equal([-1, -2, 0, 1], prepended.Take(4));
+
+            IReadOnlyList<int> combined = prepended.Append(3).Append(4);
+            Assert.Equal([-1, -2, 0, 1, 2, 3], combined.Take(6));
+        }
+
+        [Fact]
         public void AppendPrepend_First_Last_ElementAt()
         {
             Assert.Equal(42, ((int[])[42]).Append(84)[0]);
