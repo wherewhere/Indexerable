@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Indexer.Linq
 {
@@ -25,6 +27,12 @@ namespace Indexer.Linq
         {
             public override TSource this[int index] => source[Count - 1 - index];
             public override int Count => source.Count;
+            public override bool Contains(TSource item) => source.Contains(item);
+            public override int IndexOf(TSource item)
+            {
+                int index = source.IndexOf(item);
+                return index < 0 ? -1 : Count - 1 - index;
+            }
         }
     }
 }

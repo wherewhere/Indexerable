@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <PackageIcon>Icon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RootNamespace>Indexer</RootNamespace>
+    <RootNamespace>Indexer.Linq</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,7 +25,7 @@
   <PropertyGroup Condition="'$(FullTargets)' == 'true'">
     <NoWarn>$(NoWarn);NU1603;NU1901</NoWarn>
     <TargetFrameworks>$(TargetFrameworks);netcoreapp3.0;net6.0;netstandard1.0;netstandard2.1</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsWindows)' == 'true' and '$(GITHUB_ACTIONS)' != 'true'">$(TargetFrameworks);netcore5.0;uap10.0;wp8.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsWindows)' == 'true' and '$(GITHUB_ACTIONS)' != 'true'">$(TargetFrameworks);netcore5.0;uap10.0.15138.0;wp8.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>

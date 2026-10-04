@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Indexer.Linq
@@ -49,24 +50,31 @@ namespace Indexer.Linq
         /// <returns>An empty <see cref="IReadOnlyList{TResult}"/>.</returns>
         public static IReadOnlyList<TResult> Empty<TResult>() => (TResult[])[];
 
-        private sealed partial class ReadOnlyListIndexer<TSource>(IList<TSource> source) : IReadOnlyList<TSource>
+        private sealed partial class ReadOnlyListIndexer<TSource>(IList<TSource> source) : IndexerBase<TSource>
         {
-            public TSource this[int index] => source[index];
-            public int Count => source.Count;
-            public IEnumerator<TSource> GetEnumerator() => source.GetEnumerator();
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            public override TSource this[int index] => source[index];
+            public override int Count => source.Count;
+            public override bool Contains(TSource item) => source.Contains(item);
+            public override bool Contains(object? value) => (source is IList list && list.Contains(value)) || base.Contains(value);
+            public override int IndexOf(TSource item) => source.IndexOf(item);
+            public override int IndexOf(object? value) => source is IList list ? list.IndexOf(value) : base.IndexOf(value);
+            public override void CopyTo(TSource[] array, int arrayIndex) => source.CopyTo(array, arrayIndex);
+            public override void CopyTo(Array array, int index) { if (source is ICollection collection) { collection.CopyTo(array, index); } else { base.CopyTo(array, index); } }
+            public override IEnumerator<TSource> GetEnumerator() => source.GetEnumerator();
         }
 
-        private sealed partial class ReadOnlyStringIndexer(string source) : IReadOnlyList<char>
+        private sealed partial class ReadOnlyStringIndexer(string source) : IndexerBase<char>
         {
-            public char this[int index] => source[index];
-            public int Count => source.Length;
+            public override char this[int index] => source[index];
+            public override int Count => source.Length;
+            public override bool Contains(char item) => source.Contains(item);
+            public override int IndexOf(char item) => source.IndexOf(item);
+            public override void CopyTo(char[] array, int arrayIndex) => source.CopyTo(0, array, arrayIndex, source.Length);
 #if !NETSTANDARD || NETSTANDARD1_2_OR_GREATER
-            public IEnumerator<char> GetEnumerator() => ((IEnumerable<char>)source).GetEnumerator();
+            public override IEnumerator<char> GetEnumerator() => ((IEnumerable<char>)source).GetEnumerator();
 #else
-            public IEnumerator<char> GetEnumerator() => ((IEnumerable<char>)source.ToCharArray()).GetEnumerator();
+            public override IEnumerator<char> GetEnumerator() => ((IEnumerable<char>)source.ToCharArray()).GetEnumerator();
 #endif
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
             public override string ToString() => source;
         }
     }

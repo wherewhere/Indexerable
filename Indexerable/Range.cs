@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -28,18 +27,36 @@ namespace Indexer.Linq
         /// An iterator that yields a range of consecutive integers.
         /// </summary>
         [DebuggerDisplay("Count = {Count}")]
-        private sealed partial class RangeIndexer(int start, int count) : ITake<int>
+        private sealed partial class RangeIndexer(int start, int count) : IndexerBase<int>, ITake<int>
         {
-            public int this[int index] =>
+            public override int this[int index] =>
                 index >= 0 && index < count
                     ? start + index
                     : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
 
-            public int Count => count;
+            public override int Count => count;
 
             public IReadOnlyList<int> Take(int _count) => _count <= 0 ? (int[])[] : new RangeIndexer(start, Math.Min(_count, count));
 
-            public IEnumerator<int> GetEnumerator()
+            public override bool Contains(int item) => item >= start && item < start + count;
+
+            public override int IndexOf(int item)
+            {
+                int sub = item - start;
+                return sub >= 0 && sub < count ? sub : -1;
+            }
+
+            public override void CopyTo(int[] array, int arrayIndex)
+            {
+                int i = count;
+                for (int current = start; i > 0; i--)
+                {
+                    array[arrayIndex++] = current;
+                    current++;
+                }
+            }
+
+            public override IEnumerator<int> GetEnumerator()
             {
                 int i = count;
                 for (int current = start; i > 0; i--)
@@ -48,8 +65,6 @@ namespace Indexer.Linq
                     current++;
                 }
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

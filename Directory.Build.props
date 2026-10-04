@@ -43,13 +43,13 @@
     <NugetTargetMoniker>.NETCore,Version=v5.0</NugetTargetMoniker>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'uap10.0'">
+  <PropertyGroup Condition="'$(TargetFramework)' == 'uap10.0.15138.0'">
     <DefineConstants>$(DefineConstants);WINDOWS_UWP</DefineConstants>
     <NugetTargetMoniker>UAP,Version=v10.0</NugetTargetMoniker>
     <TargetPlatformMinVersion>10.0.15138.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'uap10.0'">
+  <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'uap'))">
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
     <DefaultLanguage>en-US</DefaultLanguage>
     <LanguageTargets>$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets</LanguageTargets>

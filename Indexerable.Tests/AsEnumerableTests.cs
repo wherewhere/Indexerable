@@ -91,5 +91,16 @@ namespace Indexer.Linq.Tests
             Assert.Equal([.. source], source.ToReadOnlyList());
             Assert.Equal(source, source.ToReadOnlyList().ToString());
         }
+
+        [Fact]
+        public void NonGenericIListFindsNullElements()
+        {
+            System.Collections.IList source = (System.Collections.IList)Indexerable.Repeat<string>(null!, 2);
+
+            Assert.True(source.Contains(null));
+            Assert.Equal(0, source.IndexOf(null));
+            Assert.False(source.Contains(1));
+            Assert.Equal(-1, source.IndexOf(1));
+        }
     }
 }

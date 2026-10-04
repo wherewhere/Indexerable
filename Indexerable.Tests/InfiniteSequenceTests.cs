@@ -38,6 +38,30 @@ namespace Indexer.Linq.Tests
         }
 
         [Fact]
+        public void InfiniteSequence_NegativeStepContainsAndFindsValues()
+        {
+            IList<int> sequence = (IList<int>)Indexerable.InfiniteSequence(10, -1);
+
+            Assert.True(sequence.Contains(9));
+            Assert.Equal(1, sequence.IndexOf(9));
+            Assert.True(sequence.Contains(6));
+            Assert.Equal(4, sequence.IndexOf(6));
+            Assert.False(sequence.Contains(11));
+            Assert.Equal(-1, sequence.IndexOf(11));
+        }
+
+        [Fact]
+        public void InfiniteSequence_ZeroStepContainsOnlyRepeatedValue()
+        {
+            IList<int> sequence = (IList<int>)Indexerable.InfiniteSequence(10, 0);
+
+            Assert.True(sequence.Contains(10));
+            Assert.Equal(0, sequence.IndexOf(10));
+            Assert.False(sequence.Contains(9));
+            Assert.Equal(-1, sequence.IndexOf(9));
+        }
+
+        [Fact]
         public void InfiniteSequence_ProducesExpectedSequence()
         {
             Validate<sbyte>(0, 1);

@@ -1,6 +1,5 @@
 ﻿#if NET7_0_OR_GREATER
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -23,9 +22,9 @@ namespace Indexer.Linq
             return new InfiniteSequenceIndexer<T>(start, step);
         }
 
-        private sealed partial class InfiniteSequenceIndexer<T>(T start, T step) : IReadOnlyList<T> where T : INumberBase<T>
+        private sealed partial class InfiniteSequenceIndexer<T>(T start, T step) : IndexerBase<T> where T : INumberBase<T>
         {
-            public T this[int index]
+            public override T this[int index]
             {
                 get
                 {
@@ -58,9 +57,43 @@ namespace Indexer.Linq
                 }
             }
 
-            public int Count => int.MaxValue;
+            public override int Count => int.MaxValue;
 
-            public IEnumerator<T> GetEnumerator()
+            public override bool Contains(T item)
+            {
+                if (T.IsZero(step))
+                {
+                    return item == start;
+                }
+                T sub = item - start;
+                return T.IsZero(sub) || (T.IsPositive(step) ? T.IsPositive(sub) : T.IsNegative(sub)) && ((T.IsInteger(start) && step == T.One && T.IsInteger(item)) || T.IsInteger(sub / step));
+            }
+
+            public override int IndexOf(T item)
+            {
+                if (T.IsZero(step))
+                {
+                    return item == start ? 0 : -1;
+                }
+                T sub = item - start;
+                if (T.IsZero(sub))
+                {
+                    return 0;
+                }
+                if (T.IsPositive(step) ? T.IsPositive(sub) : T.IsNegative(sub))
+                {
+                    T index = sub / step;
+                    if (T.IsInteger(index))
+                    {
+                        return int.CreateChecked(index);
+                    }
+                }
+                return -1;
+            }
+
+            public override void CopyTo(T[] array, int arrayIndex) => throw new NotSupportedException("Cannot copy an infinite sequence to an array.");
+
+            public override IEnumerator<T> GetEnumerator()
             {
                 T current = start;
                 while (true)
@@ -69,8 +102,6 @@ namespace Indexer.Linq
                     current += step;
                 }
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

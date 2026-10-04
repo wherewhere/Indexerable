@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -32,9 +31,9 @@ namespace Indexer.Linq
         /// Represents the concatenation of two <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of the source lists.</typeparam>
-        private sealed partial class ConcatIndexer<TSource>(IReadOnlyList<TSource> first, IReadOnlyList<TSource> second) : IConcat<TSource>
+        private sealed partial class ConcatIndexer<TSource>(IReadOnlyList<TSource> first, IReadOnlyList<TSource> second) : IndexerBase<TSource>, IConcat<TSource>
         {
-            public TSource this[int index]
+            public override TSource this[int index]
             {
                 get
                 {
@@ -43,11 +42,30 @@ namespace Indexer.Linq
                 }
             }
 
-            public int Count => first.Count + second.Count;
+            public override int Count => first.Count + second.Count;
 
             public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> _second) => new ConcatNIndexer<TSource>(first, second, _second);
 
-            public IEnumerator<TSource> GetEnumerator()
+            public override bool Contains(TSource item) => first.Contains(item) || second.Contains(item);
+
+            public override int IndexOf(TSource item)
+            {
+                int result = first.IndexOf(item);
+                if (result >= 0)
+                {
+                    return result;
+                }
+                result = second.IndexOf(item);
+                return result >= 0 ? first.Count + result : -1;
+            }
+
+            public override void CopyTo(TSource[] array, int arrayIndex)
+            {
+                first.CopyTo(array, arrayIndex);
+                second.CopyTo(array, arrayIndex + first.Count);
+            }
+
+            public override IEnumerator<TSource> GetEnumerator()
             {
                 foreach (TSource? item in first)
                 {
@@ -58,8 +76,6 @@ namespace Indexer.Linq
                     yield return item;
                 }
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         /// <summary>
@@ -67,9 +83,9 @@ namespace Indexer.Linq
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of the source lists.</typeparam>
         /// <remarks>Chained concatenations retain their source lists and enumerate each source in order.</remarks>
-        private sealed partial class ConcatNIndexer<TSource>(IReadOnlyList<TSource> first, params IReadOnlyList<TSource>[] rest) : IConcat<TSource>
+        private sealed partial class ConcatNIndexer<TSource>(IReadOnlyList<TSource> first, params IReadOnlyList<TSource>[] rest) : IndexerBase<TSource>, IConcat<TSource>
         {
-            public TSource this[int index]
+            public override TSource this[int index]
             {
                 get
                 {
@@ -91,11 +107,44 @@ namespace Indexer.Linq
                 }
             }
 
-            public int Count => checked(first.Count + rest.Sum(source => source.Count));
+            public override int Count => checked(first.Count + rest.Sum(source => source.Count));
 
             public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> _second) => new ConcatNIndexer<TSource>(first, [.. rest, _second]);
 
-            public IEnumerator<TSource> GetEnumerator()
+            public override bool Contains(TSource item) => first.Contains(item) || rest.Any(x => x.Contains(item));
+
+            public override int IndexOf(TSource item)
+            {
+                int result = first.IndexOf(item);
+                if (result >= 0)
+                {
+                    return result;
+                }
+                int index = first.Count;
+                foreach (IReadOnlyList<TSource> source in rest)
+                {
+                    result = source.IndexOf(item);
+                    if (result >= 0)
+                    {
+                        return index + result;
+                    }
+                    index += source.Count;
+                }
+                return -1;
+            }
+
+            public override void CopyTo(TSource[] array, int arrayIndex)
+            {
+                first.CopyTo(array, arrayIndex);
+                int index = first.Count;
+                foreach (IReadOnlyList<TSource> source in rest)
+                {
+                    source.CopyTo(array, arrayIndex + index);
+                    index += source.Count;
+                }
+            }
+
+            public override IEnumerator<TSource> GetEnumerator()
             {
                 foreach (TSource item in first)
                 {
@@ -109,8 +158,6 @@ namespace Indexer.Linq
                     }
                 }
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

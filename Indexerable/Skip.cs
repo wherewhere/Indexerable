@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Indexer.Linq
@@ -29,26 +28,58 @@ namespace Indexer.Linq
             IReadOnlyList<TSource> Skip(int count);
         }
 
-        private sealed partial class SkipIndexer<TSource>(IReadOnlyList<TSource> source, int count) : ISkip<TSource>
+        private sealed partial class SkipIndexer<TSource>(IReadOnlyList<TSource> source, int count) : IndexerBase<TSource>, ISkip<TSource>
         {
-            public TSource this[int index] =>
+            public override TSource this[int index] =>
                 index >= 0 && index < Count
                     ? source[index + count]
                     : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
 
-            public int Count => Math.Max(0, source.Count - count);
+            public override int Count => Math.Max(0, source.Count - count);
 
             public IReadOnlyList<TSource> Skip(int _count) => _count <= 0 ? this : new SkipIndexer<TSource>(source, count + _count);
 
-            public IEnumerator<TSource> GetEnumerator()
+            public override bool Contains(TSource item)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    TSource j = source[i + count];
+                    if (EqualityComparer<TSource>.Default.Equals(j, item))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            public override int IndexOf(TSource item)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    TSource j = source[i + count];
+                    if (EqualityComparer<TSource>.Default.Equals(j, item))
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            public override void CopyTo(TSource[] array, int arrayIndex)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    array[arrayIndex + i] = source[i + count];
+                }
+            }
+
+            public override IEnumerator<TSource> GetEnumerator()
             {
                 for (int i = 0; i < Count; i++)
                 {
                     yield return source[i + count];
                 }
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         /// <summary>
@@ -74,26 +105,58 @@ namespace Indexer.Linq
             IReadOnlyList<TSource> SkipLast(int count);
         }
 
-        private sealed partial class SkipLastIndexer<TSource>(IReadOnlyList<TSource> source, int count) : ISkipLast<TSource>
+        private sealed partial class SkipLastIndexer<TSource>(IReadOnlyList<TSource> source, int count) : IndexerBase<TSource>, ISkipLast<TSource>
         {
-            public TSource this[int index] =>
+            public override TSource this[int index] =>
                 index >= 0 && index < Count
                         ? source[index]
                         : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
 
-            public int Count => Math.Max(0, source.Count - count);
+            public override int Count => Math.Max(0, source.Count - count);
 
             public IReadOnlyList<TSource> SkipLast(int _count) => _count <= 0 ? this : new SkipLastIndexer<TSource>(source, count + _count);
 
-            public IEnumerator<TSource> GetEnumerator()
+            public override bool Contains(TSource item)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    TSource j = source[i];
+                    if (EqualityComparer<TSource>.Default.Equals(j, item))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            public override int IndexOf(TSource item)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    TSource j = source[i];
+                    if (EqualityComparer<TSource>.Default.Equals(j, item))
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            public override void CopyTo(TSource[] array, int arrayIndex)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    array[arrayIndex + i] = source[i];
+                }
+            }
+
+            public override IEnumerator<TSource> GetEnumerator()
             {
                 for (int i = 0; i < Count; i++)
                 {
                     yield return source[i];
                 }
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

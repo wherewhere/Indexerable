@@ -1,5 +1,6 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Indexer.Linq
 {
@@ -12,7 +13,7 @@ namespace Indexer.Linq
         /// <param name="source">The list to append a value to.</param>
         /// <param name="element">The value to append to <paramref name="source"/>.</param>
         /// <returns>A read-only list that contains the elements of <paramref name="source"/> followed by <paramref name="element"/>.</returns>
-        /// <exception cref="System.ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
         public static IReadOnlyList<TSource> Append<TSource>(this IReadOnlyList<TSource> source, TSource element)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
@@ -30,11 +31,11 @@ namespace Indexer.Linq
         /// Represents the insertion of one or more items after an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
-        private sealed partial class AppendIndexer<TSource>(IReadOnlyList<TSource> source, TSource element) : IAppendPrepend<TSource>, ISkipLast<TSource>, ITakeLast<TSource>
+        private sealed partial class AppendIndexer<TSource>(IReadOnlyList<TSource> source, TSource element) : IndexerBase<TSource>, IAppendPrepend<TSource>, ISkipLast<TSource>, ITakeLast<TSource>, IConcat<TSource>
         {
-            public TSource this[int index] => index == source.Count ? element : source[index];
+            public override TSource this[int index] => index == source.Count ? element : source[index];
 
-            public int Count => checked(source.Count + 1);
+            public override int Count => checked(source.Count + 1);
 
             public IReadOnlyList<TSource> Append(TSource _element) => new AppendNIndexer<TSource>(source, element, _element);
 
@@ -51,7 +52,23 @@ namespace Indexer.Linq
                     : count == 1 ? (TSource[])[element]
                     : new TakeLastIndexer<TSource>(this, count);
 
-            public IEnumerator<TSource> GetEnumerator()
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>(source, [element], second);
+
+            public override bool Contains(TSource item) => source.Contains(item) || EqualityComparer<TSource>.Default.Equals(element, item);
+
+            public override int IndexOf(TSource item)
+            {
+                int result = source.IndexOf(item);
+                return result >= 0 ? result : EqualityComparer<TSource>.Default.Equals(element, item) ? source.Count : -1;
+            }
+
+            public override void CopyTo(TSource[] array, int arrayIndex)
+            {
+                source.CopyTo(array, arrayIndex);
+                array[arrayIndex + source.Count] = element;
+            }
+
+            public override IEnumerator<TSource> GetEnumerator()
             {
                 foreach (TSource? item in source)
                 {
@@ -59,17 +76,15 @@ namespace Indexer.Linq
                 }
                 yield return element;
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         /// <summary>
         /// Represents the insertion of multiple items after an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
-        private sealed partial class AppendNIndexer<TSource>(IReadOnlyList<TSource> source, params TSource[] appended) : IAppendPrepend<TSource>, ISkipLast<TSource>, ITakeLast<TSource>
+        private sealed partial class AppendNIndexer<TSource>(IReadOnlyList<TSource> source, params TSource[] appended) : IndexerBase<TSource>, IAppendPrepend<TSource>, ISkipLast<TSource>, ITakeLast<TSource>, IConcat<TSource>
         {
-            public TSource this[int index]
+            public override TSource this[int index]
             {
                 get
                 {
@@ -78,7 +93,7 @@ namespace Indexer.Linq
                 }
             }
 
-            public int Count => checked(source.Count + appended.Length);
+            public override int Count => checked(source.Count + appended.Length);
 
             public IReadOnlyList<TSource> Append(TSource _element) => new AppendNIndexer<TSource>(source, [.. appended, _element]);
 
@@ -103,7 +118,28 @@ namespace Indexer.Linq
                     : new TakeLastIndexer<TSource>(this, count);
             }
 
-            public IEnumerator<TSource> GetEnumerator()
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>(source, appended, second);
+
+            public override bool Contains(TSource item) => source.Contains(item) || ((ICollection<TSource>)appended).Contains(item);
+
+            public override int IndexOf(TSource item)
+            {
+                int result = source.IndexOf(item);
+                if (result >= 0)
+                {
+                    return result;
+                }
+                result = Array.IndexOf(appended, item);
+                return result >= 0 ? source.Count + result : -1;
+            }
+
+            public override void CopyTo(TSource[] array, int arrayIndex)
+            {
+                source.CopyTo(array, arrayIndex);
+                appended.CopyTo(array, arrayIndex + source.Count);
+            }
+
+            public override IEnumerator<TSource> GetEnumerator()
             {
                 foreach (TSource? item in source)
                 {
@@ -114,8 +150,6 @@ namespace Indexer.Linq
                     yield return item;
                 }
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         /// <summary>
@@ -143,11 +177,11 @@ namespace Indexer.Linq
         /// Represents the insertion of one or more items before an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
-        private sealed partial class PrependIndexer<TSource>(IReadOnlyList<TSource> source, TSource element) : IAppendPrepend<TSource>, ISkip<TSource>, ITake<TSource>
+        private sealed partial class PrependIndexer<TSource>(IReadOnlyList<TSource> source, TSource element) : IndexerBase<TSource>, IAppendPrepend<TSource>, ISkip<TSource>, ITake<TSource>, IConcat<TSource>
         {
-            public TSource this[int index] => index == 0 ? element : source[index - 1];
+            public override TSource this[int index] => index == 0 ? element : source[index - 1];
 
-            public int Count => checked(source.Count + 1);
+            public override int Count => checked(source.Count + 1);
 
             public IReadOnlyList<TSource> Append(TSource _element) => new AppendPrependIndexer<TSource>(source, element, _element);
 
@@ -164,7 +198,27 @@ namespace Indexer.Linq
                     : count == 1 ? (TSource[])[element]
                     : new TakeIndexer<TSource>(this, count);
 
-            public IEnumerator<TSource> GetEnumerator()
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>([element], source, second);
+
+            public override bool Contains(TSource item) => EqualityComparer<TSource>.Default.Equals(element, item) || source.Contains(item);
+
+            public override int IndexOf(TSource item)
+            {
+                if (!EqualityComparer<TSource>.Default.Equals(element, item))
+                {
+                    int result = source.IndexOf(item);
+                    return result >= 0 ? result + 1 : -1;
+                }
+                return 0;
+            }
+
+            public override void CopyTo(TSource[] array, int arrayIndex)
+            {
+                array[arrayIndex] = element;
+                source.CopyTo(array, arrayIndex + 1);
+            }
+
+            public override IEnumerator<TSource> GetEnumerator()
             {
                 yield return element;
                 foreach (TSource? item in source)
@@ -172,17 +226,15 @@ namespace Indexer.Linq
                     yield return item;
                 }
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         /// <summary>
         /// Represents the insertion of multiple items before an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
-        private sealed partial class PrependNIndexer<TSource>(IReadOnlyList<TSource> source, params TSource[] prepended) : IAppendPrepend<TSource>, ISkip<TSource>, ITake<TSource>
+        private sealed partial class PrependNIndexer<TSource>(IReadOnlyList<TSource> source, params TSource[] prepended) : IndexerBase<TSource>, IAppendPrepend<TSource>, ISkip<TSource>, ITake<TSource>, IConcat<TSource>
         {
-            public TSource this[int index]
+            public override TSource this[int index]
             {
                 get
                 {
@@ -191,7 +243,7 @@ namespace Indexer.Linq
                 }
             }
 
-            public int Count => checked(prepended.Length + source.Count);
+            public override int Count => checked(prepended.Length + source.Count);
 
             public IReadOnlyList<TSource> Append(TSource _element) => new AppendPrependNIndexer<TSource>(source, prepended, [_element]);
 
@@ -216,7 +268,28 @@ namespace Indexer.Linq
                     : new TakeIndexer<TSource>(this, count);
             }
 
-            public IEnumerator<TSource> GetEnumerator()
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>(prepended, source, second);
+
+            public override bool Contains(TSource item) => ((ICollection<TSource>)prepended).Contains(item) || source.Contains(item);
+
+            public override int IndexOf(TSource item)
+            {
+                int result = Array.IndexOf(prepended, item);
+                if (result >= 0)
+                {
+                    return result;
+                }
+                result = source.IndexOf(item);
+                return result >= 0 ? prepended.Length + result : -1;
+            }
+
+            public override void CopyTo(TSource[] array, int arrayIndex)
+            {
+                prepended.CopyTo(array, arrayIndex);
+                source.CopyTo(array, arrayIndex + prepended.Length);
+            }
+
+            public override IEnumerator<TSource> GetEnumerator()
             {
                 foreach (TSource? item in prepended)
                 {
@@ -227,8 +300,6 @@ namespace Indexer.Linq
                     yield return item;
                 }
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         private interface IAppendPrepend<TSource> : IAppend<TSource>, IPrepend<TSource>;
@@ -237,11 +308,11 @@ namespace Indexer.Linq
         /// Represents the insertion of one or more items before or after an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
-        private sealed partial class AppendPrependIndexer<TSource>(IReadOnlyList<TSource> source, TSource prepended, TSource appended) : IAppendPrepend<TSource>, ISkip<TSource>, ISkipLast<TSource>, ITake<TSource>, ITakeLast<TSource>
+        private sealed partial class AppendPrependIndexer<TSource>(IReadOnlyList<TSource> source, TSource prepended, TSource appended) : IndexerBase<TSource>, IAppendPrepend<TSource>, ISkip<TSource>, ISkipLast<TSource>, ITake<TSource>, ITakeLast<TSource>, IConcat<TSource>
         {
-            public TSource this[int index] => index == 0 ? prepended : index == source.Count + 1 ? appended : source[index - 1];
+            public override TSource this[int index] => index == 0 ? prepended : index == source.Count + 1 ? appended : source[index - 1];
 
-            public int Count => checked(1 + source.Count + 1);
+            public override int Count => checked(1 + source.Count + 1);
 
             public IReadOnlyList<TSource> Append(TSource _element) => new AppendPrependNIndexer<TSource>(source, [prepended], [appended, _element]);
 
@@ -277,7 +348,28 @@ namespace Indexer.Linq
                     : count == 1 ? (TSource[])[appended]
                     : new TakeLastIndexer<TSource>(this, count);
 
-            public IEnumerator<TSource> GetEnumerator()
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>([prepended], source, [appended], second);
+
+            public override bool Contains(TSource item) => EqualityComparer<TSource>.Default.Equals(prepended, item) || source.Contains(item) || EqualityComparer<TSource>.Default.Equals(appended, item);
+
+            public override int IndexOf(TSource item)
+            {
+                if (!EqualityComparer<TSource>.Default.Equals(prepended, item))
+                {
+                    int result = source.IndexOf(item);
+                    return result >= 0 ? result + 1 : EqualityComparer<TSource>.Default.Equals(appended, item) ? source.Count + 1 : -1;
+                }
+                return 0;
+            }
+
+            public override void CopyTo(TSource[] array, int arrayIndex)
+            {
+                array[arrayIndex] = prepended;
+                source.CopyTo(array, arrayIndex + 1);
+                array[arrayIndex + 1 + source.Count] = appended;
+            }
+
+            public override IEnumerator<TSource> GetEnumerator()
             {
                 yield return prepended;
                 foreach (TSource? item in source)
@@ -286,17 +378,15 @@ namespace Indexer.Linq
                 }
                 yield return appended;
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
         /// <summary>
         /// Represents the insertion of multiple items before or after an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
-        private sealed partial class AppendPrependNIndexer<TSource>(IReadOnlyList<TSource> source, TSource[] prepended, TSource[] appended) : IAppendPrepend<TSource>, ISkip<TSource>, ISkipLast<TSource>, ITake<TSource>, ITakeLast<TSource>
+        private sealed partial class AppendPrependNIndexer<TSource>(IReadOnlyList<TSource> source, TSource[] prepended, TSource[] appended) : IndexerBase<TSource>, IAppendPrepend<TSource>, ISkip<TSource>, ISkipLast<TSource>, ITake<TSource>, ITakeLast<TSource>, IConcat<TSource>
         {
-            public TSource this[int index]
+            public override TSource this[int index]
             {
                 get
                 {
@@ -307,7 +397,7 @@ namespace Indexer.Linq
                 }
             }
 
-            public int Count => checked(prepended.Length + source.Count + appended.Length);
+            public override int Count => checked(prepended.Length + source.Count + appended.Length);
 
             public IReadOnlyList<TSource> Append(TSource _element) => new AppendPrependNIndexer<TSource>(source, prepended, [.. appended, _element]);
 
@@ -363,7 +453,34 @@ namespace Indexer.Linq
                     : new TakeLastIndexer<TSource>(this, count);
             }
 
-            public IEnumerator<TSource> GetEnumerator()
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>(prepended, source, appended, second);
+
+            public override bool Contains(TSource item) => ((ICollection<TSource>)prepended).Contains(item) || source.Contains(item) || ((ICollection<TSource>)appended).Contains(item);
+
+            public override int IndexOf(TSource item)
+            {
+                int result = Array.IndexOf(prepended, item);
+                if (result >= 0)
+                {
+                    return result;
+                }
+                result = source.IndexOf(item);
+                if (result >= 0)
+                {
+                    return prepended.Length + result;
+                }
+                result = Array.IndexOf(appended, item);
+                return result >= 0 ? prepended.Length + source.Count + result : -1;
+            }
+
+            public override void CopyTo(TSource[] array, int arrayIndex)
+            {
+                prepended.CopyTo(array, arrayIndex);
+                source.CopyTo(array, arrayIndex + prepended.Length);
+                appended.CopyTo(array, arrayIndex + prepended.Length + source.Count);
+            }
+
+            public override IEnumerator<TSource> GetEnumerator()
             {
                 foreach (TSource? item in prepended)
                 {
@@ -378,8 +495,6 @@ namespace Indexer.Linq
                     yield return item;
                 }
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Indexer.Linq
@@ -29,26 +28,58 @@ namespace Indexer.Linq
             IReadOnlyList<TSource> Take(int count);
         }
 
-        private sealed partial class TakeIndexer<TSource>(IReadOnlyList<TSource> source, int count) : ITake<TSource>
+        private sealed partial class TakeIndexer<TSource>(IReadOnlyList<TSource> source, int count) : IndexerBase<TSource>, ITake<TSource>
         {
-            public TSource this[int index] =>
+            public override TSource this[int index] =>
                 index >= 0 && index < Count
                     ? source[index]
                     : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
 
-            public int Count => Math.Min(count, source.Count);
+            public override int Count => Math.Min(count, source.Count);
 
             public IReadOnlyList<TSource> Take(int _count) => _count <= 0 ? (TSource[])[] : new TakeIndexer<TSource>(source, Math.Min(_count, count));
 
-            public IEnumerator<TSource> GetEnumerator()
+            public override bool Contains(TSource item)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    TSource j = source[i];
+                    if (EqualityComparer<TSource>.Default.Equals(j, item))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            public override int IndexOf(TSource item)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    TSource j = source[i];
+                    if (EqualityComparer<TSource>.Default.Equals(j, item))
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            public override void CopyTo(TSource[] array, int arrayIndex)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    array[arrayIndex + i] = source[i];
+                }
+            }
+
+            public override IEnumerator<TSource> GetEnumerator()
             {
                 for (int i = 0; i < Count; i++)
                 {
                     yield return source[i];
                 }
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 
 #if COMP_NETSTANDARD2_1
@@ -80,7 +111,7 @@ namespace Indexer.Linq
         //    public IReadOnlyList<TSource> this[Range range] => source.Take(range);
         //}
 
-        private sealed partial class TakeRangeIndexer<TSource>(IReadOnlyList<TSource> source, Range range) : IReadOnlyList<TSource>
+        private sealed partial class TakeRangeIndexer<TSource>(IReadOnlyList<TSource> source, Range range) : IndexerBase<TSource>
         {
             private int GetCount(out int offset)
             {
@@ -90,14 +121,51 @@ namespace Indexer.Linq
                 return end > offset ? end - offset : 0;
             }
 
-            public TSource this[int index] =>
+            public override TSource this[int index] =>
                 index >= 0 && index < GetCount(out int offset)
                     ? source[offset + index]
                     : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
 
-            public int Count => GetCount(out _);
+            public override int Count => GetCount(out _);
 
-            public IEnumerator<TSource> GetEnumerator()
+            public override bool Contains(TSource item)
+            {
+                int count = GetCount(out int offset);
+                for (int i = 0; i < count; i++)
+                {
+                    TSource j = source[offset + i];
+                    if (EqualityComparer<TSource>.Default.Equals(j, item))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            public override int IndexOf(TSource item)
+            {
+                int count = GetCount(out int offset);
+                for (int i = 0; i < count; i++)
+                {
+                    TSource j = source[offset + i];
+                    if (EqualityComparer<TSource>.Default.Equals(j, item))
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            public override void CopyTo(TSource[] array, int arrayIndex)
+            {
+                int count = GetCount(out int offset);
+                for (int i = 0; i < count; i++)
+                {
+                    array[arrayIndex + i] = source[offset + i];
+                }
+            }
+
+            public override IEnumerator<TSource> GetEnumerator()
             {
                 int count = GetCount(out int offset);
                 for (int i = 0; i < count; i++)
@@ -105,8 +173,6 @@ namespace Indexer.Linq
                     yield return source[offset + i];
                 }
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
 #endif
 
@@ -133,9 +199,9 @@ namespace Indexer.Linq
             IReadOnlyList<TSource> TakeLast(int count);
         }
 
-        private sealed partial class TakeLastIndexer<TSource>(IReadOnlyList<TSource> source, int count) : ITakeLast<TSource>
+        private sealed partial class TakeLastIndexer<TSource>(IReadOnlyList<TSource> source, int count) : IndexerBase<TSource>, ITakeLast<TSource>
         {
-            public TSource this[int index]
+            public override TSource this[int index]
             {
                 get
                 {
@@ -146,11 +212,48 @@ namespace Indexer.Linq
                 }
             }
 
-            public int Count => Math.Min(count, source.Count);
+            public override int Count => Math.Min(count, source.Count);
 
             public IReadOnlyList<TSource> TakeLast(int _count) => _count <= 0 ? (TSource[])[] : new TakeLastIndexer<TSource>(source, Math.Min(_count, count));
 
-            public IEnumerator<TSource> GetEnumerator()
+            public override bool Contains(TSource item)
+            {
+                int takeCount;
+                for (int i = 0; i < (takeCount = Count); i++)
+                {
+                    TSource j = source[source.Count - takeCount + i];
+                    if (EqualityComparer<TSource>.Default.Equals(j, item))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            public override int IndexOf(TSource item)
+            {
+                int takeCount;
+                for (int i = 0; i < (takeCount = Count); i++)
+                {
+                    TSource j = source[source.Count - takeCount + i];
+                    if (EqualityComparer<TSource>.Default.Equals(j, item))
+                    {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            public override void CopyTo(TSource[] array, int arrayIndex)
+            {
+                int takeCount;
+                for (int i = 0; i < (takeCount = Count); i++)
+                {
+                    array[arrayIndex + i] = source[source.Count - takeCount + i];
+                }
+            }
+
+            public override IEnumerator<TSource> GetEnumerator()
             {
                 int takeCount;
                 for (int i = 0; i < (takeCount = Count); i++)
@@ -158,8 +261,6 @@ namespace Indexer.Linq
                     yield return source[source.Count - takeCount + i];
                 }
             }
-
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
     }
 }

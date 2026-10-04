@@ -38,6 +38,9 @@ namespace Indexer.Linq
             public IReadOnlyList<TResult> SkipLast(int _count) => Skip(_count);
             public IReadOnlyList<TResult> Take(int _count) => _count <= 0 ? (TResult[])[] : new RepeatIndexer<TResult>(element, Math.Min(_count, count));
             public IReadOnlyList<TResult> TakeLast(int _count) => Take(_count);
+            public override bool Contains(TResult item) => EqualityComparer<TResult>.Default.Equals(element, item);
+            public override int IndexOf(TResult item) => EqualityComparer<TResult>.Default.Equals(element, item) ? 0 : -1;
+            public override void CopyTo(TResult[] array, int arrayIndex) => Array.Fill(array, element, arrayIndex, count);
         }
     }
 }

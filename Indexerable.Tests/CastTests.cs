@@ -274,11 +274,67 @@ namespace Indexer.Linq.Tests
                 }
             }
 
-            int[] result = [.. array.Cast<int>()];
+            IReadOnlyList<int> result = array.Cast<int>();
             for (int i = 0; i < 6; i++)
             {
                 Assert.Equal(i, result[i]);
             }
+        }
+
+        [Fact]
+        public void CastOnMultidimensionalArrayUsesRowMajorIndexingForHigherRanks()
+        {
+            Array array = Array.CreateInstance(typeof(int), 2, 2, 2, 2);
+            int value = 0;
+            for (int i = 0; i < 2; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    for (int k = 0; k < 2; k++)
+                    {
+                        for (int l = 0; l < 2; l++)
+                        {
+                            array.SetValue(value++, i, j, k, l);
+                        }
+                    }
+                }
+            }
+
+            IReadOnlyList<int> result = array.Cast<int>();
+            for (int i = 0; i < 16; i++)
+            {
+                Assert.Equal(i, result[i]);
+            }
+        }
+
+        [Fact]
+        public void CastOnMultidimensionalArrayAccountsForNonZeroLowerBounds()
+        {
+            Array array = Array.CreateInstance(typeof(int), [2, 3], [1, -2]);
+            for (int i = 1; i < 3; i++)
+            {
+                for (int j = -2; j < 1; j++)
+                {
+                    array.SetValue(((i - 1) * 3) + j + 2, i, j);
+                }
+            }
+
+            IReadOnlyList<int> result = array.Cast<int>();
+            for (int i = 0; i < result.Count; i++)
+            {
+                Assert.Equal(i, result[i]);
+            }
+        }
+
+        [Fact]
+        public void CastOnEmptyMultidimensionalArrayThrowsForAnyIndex()
+        {
+            Array array = Array.CreateInstance(typeof(int), 0, 3);
+            IReadOnlyList<int> result = array.Cast<int>();
+
+            Assert.Empty(result);
+            Assert.Throws<ArgumentOutOfRangeException>(() => result[0]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => result[-1]);
         }
 
         [Fact]
