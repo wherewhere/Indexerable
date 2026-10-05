@@ -18,14 +18,14 @@
   <PropertyGroup>
     <CheckNotRecommendedTargetFramework>false</CheckNotRecommendedTargetFramework>
     <SuppressTfmSupportBuildWarnings>false</SuppressTfmSupportBuildWarnings>
-    <TargetFrameworks>net7.0;net9.0;netcoreapp2.0;netstandard1.2;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net8.0;net9.0;netcoreapp2.0;netcoreapp3.0;netstandard1.0;netstandard2.0;netstandard2.1</TargetFrameworks>
     <TargetFrameworks Condition="'$(IsWindows)' == 'true'">$(TargetFrameworks);net4.5;net4.7</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(FullTargets)' == 'true'">
     <NoWarn>$(NoWarn);NU1603;NU1901</NoWarn>
-    <TargetFrameworks>$(TargetFrameworks);netcoreapp3.0;net6.0;netstandard1.0;netstandard2.1</TargetFrameworks>
-    <TargetFrameworks Condition="'$(IsWindows)' == 'true' and '$(GITHUB_ACTIONS)' != 'true'">$(TargetFrameworks);netcore5.0;uap10.0.15138.0;wp8.0</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworks);net7.0;netcoreapp2.1;netstandard1.2</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IsWindows)' == 'true' and '$(GITHUB_ACTIONS)' != 'true'">$(TargetFrameworks);netcore5.0;net4.7.1;uap10.0.15138.0;wp8.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>

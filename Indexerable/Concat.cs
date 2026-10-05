@@ -141,7 +141,14 @@ namespace Indexer.Linq
                 }
             }
 
-            public override int Count => checked(first.Count + rest.Sum(source => source.Count));
+            public override int Count
+            {
+                get
+                {
+                    return checked(first.Count + rest.Sum(Count));
+                    static int Count(IReadOnlyList<TSource> source) => source.Count;
+                }
+            }
 
             public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> _second) => new ConcatNIndexer<TSource>(first, [.. rest, _second]);
 

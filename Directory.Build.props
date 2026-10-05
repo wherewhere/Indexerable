@@ -19,7 +19,7 @@
     <RepositoryUrl>https://github.com/wherewhere/Indexerable</RepositoryUrl>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <Title>Indexerable - LINQ for IReadOnlyList</Title>
-    <VersionPrefix>0.0.1</VersionPrefix>
+    <VersionPrefix>0.0.2</VersionPrefix>
     <Description>LINQ-style operators for IReadOnlyList collections, with lazy evaluation and indexed access.</Description>
   </PropertyGroup>
 
