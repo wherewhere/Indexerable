@@ -31,6 +31,8 @@ body:
       label: NuGet package version
       description: Specify the version of Indexerable you're using.
       options:
+        - Latest Source
+        - 0.0.2
         - 0.0.1
   - type: dropdown
     attributes:
