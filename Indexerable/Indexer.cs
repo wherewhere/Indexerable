@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace Indexer.Linq
 {
@@ -74,6 +73,25 @@ namespace Indexer.Linq
             void IList<TSource>.RemoveAt(int index) => throw new NotSupportedException();
 
             #endregion
+
+            protected abstract partial class IndexerEnumeratorBase : IEnumerator<TSource>
+            {
+                protected int _index = -1;
+                public abstract TSource Current { get; }
+                public abstract bool MoveNext();
+                public virtual void Reset() => _index = -1;
+                object? IEnumerator.Current => Current;
+                public virtual void Dispose() { }
+            }
+
+            protected abstract partial class EnumeratorIndexerEnumeratorBase : IndexerEnumeratorBase, IDisposable
+            {
+                protected IEnumerator<TSource>? _enumerator = null;
+                protected TSource _current = default!;
+                public sealed override TSource Current => _current;
+                public sealed override void Reset() { base.Reset(); _current = default!; }
+                public sealed override void Dispose() { _enumerator?.Dispose(); _enumerator = null; }
+            }
         }
 
         /// <summary>
@@ -100,7 +118,8 @@ namespace Indexer.Linq
 
             public override int IndexOf(TSource item)
             {
-                for (int i = 0; i < Count; i++)
+                int count = Count;
+                for (int i = 0; i < count; i++)
                 {
                     if (EqualityComparer<TSource>.Default.Equals(this[i], item))
                     {
@@ -112,25 +131,23 @@ namespace Indexer.Linq
 
             public override void CopyTo(TSource[] array, int arrayIndex)
             {
-                for (int i = 0; i < Count; i++)
+                int count = Count;
+                for (int i = 0; i < count; i++)
                 {
                     array[arrayIndex + i] = this[i];
                 }
             }
 
-            public override IEnumerator<TSource> GetEnumerator() => new IndexerEnumerator(this);
+            public sealed override IEnumerator<TSource> GetEnumerator() => new IndexerEnumerator(this);
 
-            private sealed class IndexerEnumerator(Indexer<TSource> source) : IEnumerator<TSource>
+            protected sealed partial class IndexerEnumerator(Indexer<TSource> source) : IndexerEnumeratorBase
             {
-                private int _index = -1;
+                public override TSource Current => source[_index];
 
-                public TSource Current => source[_index];
-
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public bool MoveNext()
+                public override bool MoveNext()
                 {
                     int index = _index + 1, count = source.Count;
-                    if (index < count)
+                    if ((uint)index < (uint)count)
                     {
                         _index = index;
                         return true;
@@ -138,12 +155,6 @@ namespace Indexer.Linq
                     _index = count;
                     return false;
                 }
-
-                public void Reset() => _index = -1;
-
-                object? IEnumerator.Current => Current;
-
-                void IDisposable.Dispose() { }
             }
         }
     }

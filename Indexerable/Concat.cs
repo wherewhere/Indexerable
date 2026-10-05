@@ -27,11 +27,55 @@ namespace Indexer.Linq
             IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second);
         }
 
+        private abstract partial class ConcatIndexerBase<TSource> : IndexerBase<TSource>
+        {
+            protected sealed partial class IndexerEnumerator(IReadOnlyList<TSource> source, IReadOnlyList<TSource> second) : EnumeratorIndexerEnumeratorBase
+            {
+                public override bool MoveNext()
+                {
+                    switch (_index)
+                    {
+                        case -1:
+                        case 0:
+                            _enumerator = source.GetEnumerator();
+                            _index = 1;
+                            goto case 1;
+                        case 1:
+                            if (!_enumerator!.MoveNext())
+                            {
+                                _index = 2;
+                                _enumerator.Dispose();
+                                goto case 2;
+                            }
+                            _current = _enumerator.Current;
+                            return true;
+                        case 2:
+                            _enumerator = second.GetEnumerator();
+                            _index = 3;
+                            goto case 3;
+                        case 3:
+                            if (!_enumerator!.MoveNext())
+                            {
+                                _index = 4;
+                                _enumerator.Dispose();
+                                _enumerator = null;
+                                goto case 4;
+                            }
+                            _current = _enumerator.Current;
+                            return true;
+                        case 4:
+                        default:
+                            return false;
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Represents the concatenation of two <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of the source lists.</typeparam>
-        private sealed partial class ConcatIndexer<TSource>(IReadOnlyList<TSource> first, IReadOnlyList<TSource> second) : IndexerBase<TSource>, IConcat<TSource>
+        private sealed partial class ConcatIndexer<TSource>(IReadOnlyList<TSource> first, IReadOnlyList<TSource> second) : ConcatIndexerBase<TSource>, IConcat<TSource>
         {
             public override TSource this[int index]
             {
@@ -65,17 +109,7 @@ namespace Indexer.Linq
                 second.CopyTo(array, arrayIndex + first.Count);
             }
 
-            public override IEnumerator<TSource> GetEnumerator()
-            {
-                foreach (TSource? item in first)
-                {
-                    yield return item;
-                }
-                foreach (TSource? item in second)
-                {
-                    yield return item;
-                }
-            }
+            public override IEnumerator<TSource> GetEnumerator() => new IndexerEnumerator(first, second);
         }
 
         /// <summary>
@@ -144,17 +178,52 @@ namespace Indexer.Linq
                 }
             }
 
-            public override IEnumerator<TSource> GetEnumerator()
+            public override IEnumerator<TSource> GetEnumerator() => new IndexerEnumerator(first, rest);
+
+            private sealed partial class IndexerEnumerator(IReadOnlyList<TSource> first, params IReadOnlyList<TSource>[] rest) : EnumeratorIndexerEnumeratorBase
             {
-                foreach (TSource item in first)
+                private int _status = -1;
+
+                public override bool MoveNext()
                 {
-                    yield return item;
-                }
-                foreach (IReadOnlyList<TSource> source in rest)
-                {
-                    foreach (TSource item in source)
+                    switch (_index)
                     {
-                        yield return item;
+                        case -1:
+                        case 0:
+                            _enumerator = first.GetEnumerator();
+                            _index = 1;
+                            goto case 1;
+                        case 1:
+                            if (!_enumerator!.MoveNext())
+                            {
+                                _index = 2;
+                                _enumerator.Dispose();
+                                goto case 2;
+                            }
+                            _current = _enumerator.Current;
+                            return true;
+                        case 2:
+                            int index = _status + 1, count = rest.Length;
+                            if ((uint)index < (uint)count)
+                            {
+                                _enumerator = rest[_status = index].GetEnumerator();
+                                _index = 3;
+                                goto case 3;
+                            }
+                            _status = count;
+                            goto case 4;
+                        case 3:
+                            if (!_enumerator!.MoveNext())
+                            {
+                                _index = 2;
+                                _enumerator.Dispose();
+                                goto case 2;
+                            }
+                            _current = _enumerator.Current;
+                            return true;
+                        case 4:
+                        default:
+                            return false;
                     }
                 }
             }

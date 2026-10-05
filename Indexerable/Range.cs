@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Indexer.Linq
 {
@@ -26,7 +25,6 @@ namespace Indexer.Linq
         /// <summary>
         /// An iterator that yields a range of consecutive integers.
         /// </summary>
-        [DebuggerDisplay("Count = {Count}")]
         private sealed partial class RangeIndexer(int start, int count) : IndexerBase<int>, ITake<int>
         {
             public override int this[int index] =>
@@ -56,13 +54,32 @@ namespace Indexer.Linq
                 }
             }
 
-            public override IEnumerator<int> GetEnumerator()
+            public override IEnumerator<int> GetEnumerator() => new IndexerEnumerator(start, count);
+
+            private sealed partial class IndexerEnumerator(int start, int count) : IndexerEnumeratorBase
             {
-                int i = count;
-                for (int current = start; i > 0; i--)
+                private readonly int start = start;
+                private int current = start;
+                public override int Current => current;
+
+                public override bool MoveNext()
                 {
-                    yield return current;
-                    current++;
+                    if (++_index == 0)
+                    {
+                        return true;
+                    }
+                    else if (_index < count)
+                    {
+                        current++;
+                        return true;
+                    }
+                    return false;
+                }
+
+                public override void Reset()
+                {
+                    base.Reset();
+                    current = start;
                 }
             }
         }

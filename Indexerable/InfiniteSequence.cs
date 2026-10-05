@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace Indexer.Linq
 {
@@ -66,7 +67,7 @@ namespace Indexer.Linq
                     return item == start;
                 }
                 T sub = item - start;
-                return T.IsZero(sub) || (T.IsPositive(step) ? T.IsPositive(sub) : T.IsNegative(sub)) && ((T.IsInteger(start) && step == T.One && T.IsInteger(item)) || T.IsInteger(sub / step));
+                return T.IsZero(sub) || ((T.IsPositive(step) ? T.IsPositive(sub) : T.IsNegative(sub)) && ((T.IsInteger(start) && step == T.One && T.IsInteger(item)) || T.IsInteger(sub / step)));
             }
 
             public override int IndexOf(T item)
@@ -93,13 +94,31 @@ namespace Indexer.Linq
 
             public override void CopyTo(T[] array, int arrayIndex) => throw new NotSupportedException("Cannot copy an infinite sequence to an array.");
 
-            public override IEnumerator<T> GetEnumerator()
+            public override IEnumerator<T> GetEnumerator() => new IndexerEnumerator(start, step);
+
+            private sealed partial class IndexerEnumerator(T start, T step) : IndexerEnumeratorBase
             {
-                T current = start;
-                while (true)
+                private readonly T start = start;
+                private T current = start;
+                public override T Current => current;
+
+                public override bool MoveNext()
                 {
-                    yield return current;
-                    current += step;
+                    switch (_index)
+                    {
+                        case -1:
+                            _index = 0;
+                            return true;
+                        default:
+                            current += step;
+                            return true;
+                    }
+                }
+
+                public override void Reset()
+                {
+                    base.Reset();
+                    current = start;
                 }
             }
         }

@@ -68,13 +68,37 @@ namespace Indexer.Linq
                 array[arrayIndex + source.Count] = element;
             }
 
-            public override IEnumerator<TSource> GetEnumerator()
+            public override IEnumerator<TSource> GetEnumerator() => new IndexerEnumerator(source, element);
+
+            private sealed partial class IndexerEnumerator(IReadOnlyList<TSource> source, TSource appended) : EnumeratorIndexerEnumeratorBase
             {
-                foreach (TSource? item in source)
+                public override bool MoveNext()
                 {
-                    yield return item;
+                    switch (_index)
+                    {
+                        case -1:
+                            _enumerator = source.GetEnumerator();
+                            _index = 0;
+                            goto case 0;
+                        case 0:
+                            if (!_enumerator!.MoveNext())
+                            {
+                                _index = 1;
+                                _enumerator.Dispose();
+                                _enumerator = null;
+                                goto case 1;
+                            }
+                            _current = _enumerator.Current;
+                            return true;
+                        case 1:
+                            _current = appended;
+                            _index = 2;
+                            return true;
+                        case 2:
+                        default:
+                            return false;
+                    }
                 }
-                yield return element;
             }
         }
 
@@ -82,7 +106,7 @@ namespace Indexer.Linq
         /// Represents the insertion of multiple items after an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
-        private sealed partial class AppendNIndexer<TSource>(IReadOnlyList<TSource> source, params TSource[] appended) : IndexerBase<TSource>, IAppendPrepend<TSource>, ISkipLast<TSource>, ITakeLast<TSource>, IConcat<TSource>
+        private sealed partial class AppendNIndexer<TSource>(IReadOnlyList<TSource> source, params TSource[] appended) : ConcatIndexerBase<TSource>, IAppendPrepend<TSource>, ISkipLast<TSource>, ITakeLast<TSource>, IConcat<TSource>
         {
             public override TSource this[int index]
             {
@@ -139,17 +163,7 @@ namespace Indexer.Linq
                 appended.CopyTo(array, arrayIndex + source.Count);
             }
 
-            public override IEnumerator<TSource> GetEnumerator()
-            {
-                foreach (TSource? item in source)
-                {
-                    yield return item;
-                }
-                foreach (TSource? item in appended)
-                {
-                    yield return item;
-                }
-            }
+            public override IEnumerator<TSource> GetEnumerator() => new IndexerEnumerator(source, appended);
         }
 
         /// <summary>
@@ -218,12 +232,36 @@ namespace Indexer.Linq
                 source.CopyTo(array, arrayIndex + 1);
             }
 
-            public override IEnumerator<TSource> GetEnumerator()
+            public override IEnumerator<TSource> GetEnumerator() => new IndexerEnumerator(source, element);
+
+            private sealed partial class IndexerEnumerator(IReadOnlyList<TSource> source, TSource prepended) : EnumeratorIndexerEnumeratorBase
             {
-                yield return element;
-                foreach (TSource? item in source)
+                public override bool MoveNext()
                 {
-                    yield return item;
+                    switch (_index)
+                    {
+                        case -1:
+                            _current = prepended;
+                            _index = 0;
+                            return true;
+                        case 0:
+                            _enumerator = source.GetEnumerator();
+                            _index = 1;
+                            goto case 1;
+                        case 1:
+                            if (!_enumerator!.MoveNext())
+                            {
+                                _index = 2;
+                                _enumerator.Dispose();
+                                _enumerator = null;
+                                goto case 2;
+                            }
+                            _current = _enumerator.Current;
+                            return true;
+                        case 2:
+                        default:
+                            return false;
+                    }
                 }
             }
         }
@@ -232,7 +270,7 @@ namespace Indexer.Linq
         /// Represents the insertion of multiple items before an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
-        private sealed partial class PrependNIndexer<TSource>(IReadOnlyList<TSource> source, params TSource[] prepended) : IndexerBase<TSource>, IAppendPrepend<TSource>, ISkip<TSource>, ITake<TSource>, IConcat<TSource>
+        private sealed partial class PrependNIndexer<TSource>(IReadOnlyList<TSource> source, params TSource[] prepended) : ConcatIndexerBase<TSource>, IAppendPrepend<TSource>, ISkip<TSource>, ITake<TSource>, IConcat<TSource>
         {
             public override TSource this[int index]
             {
@@ -289,17 +327,7 @@ namespace Indexer.Linq
                 source.CopyTo(array, arrayIndex + prepended.Length);
             }
 
-            public override IEnumerator<TSource> GetEnumerator()
-            {
-                foreach (TSource? item in prepended)
-                {
-                    yield return item;
-                }
-                foreach (TSource? item in source)
-                {
-                    yield return item;
-                }
-            }
+            public override IEnumerator<TSource> GetEnumerator() => new IndexerEnumerator(prepended, source);
         }
 
         private interface IAppendPrepend<TSource> : IAppend<TSource>, IPrepend<TSource>;
@@ -369,14 +397,41 @@ namespace Indexer.Linq
                 array[arrayIndex + 1 + source.Count] = appended;
             }
 
-            public override IEnumerator<TSource> GetEnumerator()
+            public override IEnumerator<TSource> GetEnumerator() => new IndexerEnumerator(source, prepended, appended);
+
+            private sealed partial class IndexerEnumerator(IReadOnlyList<TSource> source, TSource prepended, TSource appended) : EnumeratorIndexerEnumeratorBase
             {
-                yield return prepended;
-                foreach (TSource? item in source)
+                public override bool MoveNext()
                 {
-                    yield return item;
+                    switch (_index)
+                    {
+                        case -1:
+                            _current = prepended;
+                            _index = 0;
+                            return true;
+                        case 0:
+                            _enumerator = source.GetEnumerator();
+                            _index = 1;
+                            goto case 1;
+                        case 1:
+                            if (!_enumerator!.MoveNext())
+                            {
+                                _index = 2;
+                                _enumerator.Dispose();
+                                _enumerator = null;
+                                goto case 2;
+                            }
+                            _current = _enumerator.Current;
+                            return true;
+                        case 2:
+                            _current = appended;
+                            _index = 3;
+                            return true;
+                        case 3:
+                        default:
+                            return false;
+                    }
                 }
-                yield return appended;
             }
         }
 
@@ -384,7 +439,7 @@ namespace Indexer.Linq
         /// Represents the insertion of multiple items before or after an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
-        private sealed partial class AppendPrependNIndexer<TSource>(IReadOnlyList<TSource> source, TSource[] prepended, TSource[] appended) : IndexerBase<TSource>, IAppendPrepend<TSource>, ISkip<TSource>, ISkipLast<TSource>, ITake<TSource>, ITakeLast<TSource>, IConcat<TSource>
+        private sealed partial class AppendPrependNIndexer<TSource>(IReadOnlyList<TSource> source, TSource[] prepended, TSource[] appended) : IndexerBase<TSource>, IAppendPrepend<TSource>, ISkipBoth<TSource>, ITake<TSource>, ITakeLast<TSource>, IConcat<TSource>
         {
             public override TSource this[int index]
             {
@@ -480,19 +535,58 @@ namespace Indexer.Linq
                 appended.CopyTo(array, arrayIndex + prepended.Length + source.Count);
             }
 
-            public override IEnumerator<TSource> GetEnumerator()
+            public override IEnumerator<TSource> GetEnumerator() => new IndexerEnumerator(source, prepended, appended);
+
+            private sealed partial class IndexerEnumerator(IReadOnlyList<TSource> source, IReadOnlyList<TSource> prepended, IReadOnlyList<TSource> appended) : EnumeratorIndexerEnumeratorBase
             {
-                foreach (TSource? item in prepended)
+                public override bool MoveNext()
                 {
-                    yield return item;
-                }
-                foreach (TSource? item in source)
-                {
-                    yield return item;
-                }
-                foreach (TSource? item in appended)
-                {
-                    yield return item;
+                    switch (_index)
+                    {
+                        case -1:
+                            _enumerator = prepended.GetEnumerator();
+                            _index = 0;
+                            goto case 0;
+                        case 0:
+                            if (!_enumerator!.MoveNext())
+                            {
+                                _index = 1;
+                                _enumerator.Dispose();
+                                goto case 1;
+                            }
+                            _current = _enumerator.Current;
+                            return true;
+                        case 1:
+                            _enumerator = source.GetEnumerator();
+                            _index = 2;
+                            goto case 2;
+                        case 2:
+                            if (!_enumerator!.MoveNext())
+                            {
+                                _index = 3;
+                                _enumerator.Dispose();
+                                goto case 3;
+                            }
+                            _current = _enumerator.Current;
+                            return true;
+                        case 3:
+                            _enumerator = appended.GetEnumerator();
+                            _index = 4;
+                            goto case 4;
+                        case 4:
+                            if (!_enumerator!.MoveNext())
+                            {
+                                _index = 5;
+                                _enumerator.Dispose();
+                                _enumerator = null;
+                                goto case 5;
+                            }
+                            _current = _enumerator.Current;
+                            return true;
+                        case 5:
+                        default:
+                            return false;
+                    }
                 }
             }
         }

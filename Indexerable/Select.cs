@@ -23,7 +23,7 @@ namespace Indexer.Linq
                 ? select.Select(selector) : new IReadOnlyListSelectIndexer<TSource, TResult>(source, selector);
         }
 
-        private interface ISelect<TSource> : IReadOnlyList<TSource>
+        private interface ISelect<out TSource> : IReadOnlyList<TSource>
         {
             /// <inheritdoc cref="Select{TSource, TResult}(IReadOnlyList{TSource}, Func{TSource, TResult})"/>
             IReadOnlyList<TResult> Select<TResult>(Func<TSource, TResult> selector);
@@ -60,7 +60,7 @@ namespace Indexer.Linq
                 ? select.Select(selector) : new IReadOnlyListSelectWithIndexIndexer<TSource, TResult>(source, selector);
         }
 
-        private interface ISelectWithIndex<TSource> : ISelect<TSource>
+        private interface ISelectWithIndex<out TSource> : ISelect<TSource>
         {
             /// <inheritdoc cref="Select{TSource, TResult}(IReadOnlyList{TSource}, Func{TSource, int, TResult})"/>
             IReadOnlyList<TResult> Select<TResult>(Func<TSource, int, TResult> selector);
