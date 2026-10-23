@@ -19,7 +19,7 @@ namespace Indexer.Linq
             return count switch
             {
                 0 => (TResult[])[],
-                1 => (TResult[])[element],
+                1 => new SingleElementIndexer<TResult>(element),
                 _ => new RepeatIndexer<TResult>(element, count),
             };
         }

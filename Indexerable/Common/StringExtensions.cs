@@ -1,4 +1,4 @@
-﻿#if !NETCOREAPP2_1_OR_GREATER || COMP_NETSTANDARD2_1
+﻿#if !NETCOREAPP2_1_OR_GREATER || !COMP_NETSTANDARD2_1
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 

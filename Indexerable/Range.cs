@@ -19,13 +19,92 @@ namespace Indexer.Linq
             {
                 ThrowHelper.ThrowArgumentOutOfRangeException(nameof(count));
             }
-            return count > 0 ? new RangeIndexer(start, count) : (int[])[];
+            return count switch
+            {
+                0 => (int[])[],
+                1 => new SingleElementIndexer<int>(start),
+                _ => start switch
+                {
+                    0 => new RangeIndexer(count),
+                    _ => new RangeOffsetIndexer(start, count)
+                }
+            };
         }
 
         /// <summary>
         /// An iterator that yields a range of consecutive integers.
         /// </summary>
-        private sealed partial class RangeIndexer(int start, int count) : IndexerBase<int>, ITake<int>
+        private sealed partial class RangeIndexer(int count) : IndexerBase<int>, ISelectWithIndex<int>, ISkipBoth<int>, ITake<int>, ITakeLast<int>
+        {
+            public override int this[int index] =>
+                index >= 0 && index < count
+                    ? index
+                    : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
+
+            public override int Count => count;
+
+            public IReadOnlyList<TResult> Select<TResult>(Func<int, TResult> selector) =>
+                new CreateIndexer<TResult>(count, selector);
+
+            public IReadOnlyList<TResult> Select<TResult>(Func<int, int, TResult> selector) =>
+                new CreateIndexer<TResult>(count, i => selector(i, i));
+
+            public IReadOnlyList<int> Skip(int _count) =>
+                _count <= 0 ? this
+                    : _count >= count ? (int[])[]
+                    : new RangeOffsetIndexer(_count, count - _count);
+
+            public IReadOnlyList<int> SkipLast(int _count) =>
+                _count <= 0 ? this
+                    : _count >= count ? (int[])[]
+                    : new RangeIndexer(count - _count);
+
+            public IReadOnlyList<int> Take(int _count) =>
+                _count <= 0 ? (int[])[]
+                    : _count >= count ? this
+                    : new RangeIndexer(_count);
+
+            public IReadOnlyList<int> TakeLast(int _count) =>
+                _count <= 0 ? (int[])[]
+                    : _count >= count ? this
+                    : new RangeOffsetIndexer(count - _count, _count);
+
+            public override bool Contains(int item) => item >= 0 && item < count;
+
+            public override int IndexOf(int item) => item >= 0 && item < count ? item : -1;
+
+            public override void CopyTo(int[] array, int arrayIndex)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    array[arrayIndex++] = i;
+                }
+            }
+
+            public override IEnumerator<int> GetEnumerator() => new IndexerEnumerator(count);
+
+            private sealed partial class IndexerEnumerator(int count) : IndexerEnumeratorBase
+            {
+                public override int Current => _index;
+
+                public override bool MoveNext()
+                {
+                    int index = _index + 1, length = count;
+                    if ((uint)index < (uint)length)
+                    {
+                        _index = index;
+                        return true;
+                    }
+                    _index = length;
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// An iterator that yields a range of consecutive integers.
+        /// </summary>
+        private sealed partial class RangeOffsetIndexer(int start, int count) : IndexerBase<int>, ISelectWithIndex<int>, ISkipBoth<int>, ITake<int>, ITakeLast<int>
         {
             public override int this[int index] =>
                 index >= 0 && index < count
@@ -34,7 +113,31 @@ namespace Indexer.Linq
 
             public override int Count => count;
 
-            public IReadOnlyList<int> Take(int _count) => _count <= 0 ? (int[])[] : new RangeIndexer(start, Math.Min(_count, count));
+            public IReadOnlyList<TResult> Select<TResult>(Func<int, TResult> selector) =>
+                new CreateOffsetIndexer<TResult>(start, count, selector);
+
+            public IReadOnlyList<TResult> Select<TResult>(Func<int, int, TResult> selector) =>
+                new CreateOffsetIndexer<TResult>(start, count, i => selector(i, i - start));
+
+            public IReadOnlyList<int> Skip(int _count) =>
+                _count <= 0 ? this
+                    : _count >= count ? (int[])[]
+                    : new RangeOffsetIndexer(start + _count, count - _count);
+
+            public IReadOnlyList<int> SkipLast(int _count) =>
+                _count <= 0 ? this
+                    : _count >= count ? (int[])[]
+                    : new RangeOffsetIndexer(start, count - _count);
+
+            public IReadOnlyList<int> Take(int _count) =>
+                _count <= 0 ? (int[])[]
+                    : _count >= count ? this
+                    : new RangeOffsetIndexer(start, _count);
+
+            public IReadOnlyList<int> TakeLast(int _count) =>
+                _count <= 0 ? (int[])[]
+                    : _count >= count ? this
+                    : new RangeOffsetIndexer(start + (count - _count), _count);
 
             public override bool Contains(int item) => item >= start && item < start + count;
 
@@ -49,8 +152,7 @@ namespace Indexer.Linq
                 int i = count;
                 for (int current = start; i > 0; i--)
                 {
-                    array[arrayIndex++] = current;
-                    current++;
+                    array[arrayIndex++] = current++;
                 }
             }
 

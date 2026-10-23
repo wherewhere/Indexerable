@@ -22,6 +22,7 @@ Indexerable provides LINQ-style operations for `IReadOnlyList<T>`. Its list-orie
 - .NET 7.0
 - .NET 8.0
 - .NET 9.0
+- .NET 10.0
 
 ## Install
 
@@ -59,7 +60,7 @@ All extension methods operate on `IReadOnlyList<T>` unless noted.
 
 | Category | Methods |
 | --- | --- |
-| Create sequences | `Range`, `Repeat`, `Empty`, `InfiniteSequence` |
+| Create sequences | `Create`, `Range`, `Repeat`, `Empty`, `InfiniteSequence` |
 | Adapt lists | `AsReadOnlyList`, `ToReadOnlyList`, `Cast` |
 | Transform and combine | `Select`, `Append`, `Prepend`, `Concat`, `Zip`, `Reverse`, `Index` |
 | Select a portion | `Skip`, `SkipLast`, `Take`, `TakeLast` |
@@ -68,10 +69,19 @@ All extension methods operate on `IReadOnlyList<T>` unless noted.
 
 `ToReadOnlyList` also has an overload for `string`, which exposes its characters as a read-only list. `InfiniteSequence<T>` is available on .NET 7 and later targets.
 
+Use `Create` to generate a fixed-size list from each element's zero-based index:
+
+```csharp
+IReadOnlyList<int> squares = Indexerable.Create(5, index => index * index);
+Console.WriteLine(squares.Count);              // 5
+Console.WriteLine(squares[3]);                 // 9
+Console.WriteLine(string.Join(", ", squares)); // 0, 1, 4, 9, 16
+```
+
 ## How queries behave
 
 - Sequence-producing operations return `IReadOnlyList<T>`, with `Count`, indexed access, and `foreach`. Search operations such as `IndexOf` return an index, while `CopyTo` copies elements into an array.
-- Most operators return lightweight list views. Elements are generally computed when accessed or enumerated rather than materialized into a new collection. For example, `Select` invokes its selector each time an item is accessed; projected values are not cached.
+- Most operators return lightweight list views. Elements are generally computed when accessed or enumerated rather than materialized into a new collection. For example, `Create` and `Select` invoke their selector each time an item is accessed; generated and projected values are not cached.
 - Views over an existing list retain that source rather than taking a snapshot, so changes to a mutable source may be visible through the view.
 - Most operators require an `IReadOnlyList<T>`. Convert an `IList<T>` with `ToReadOnlyList` when needed; it wraps the source rather than copying it.
 - `InfiniteSequence` is unbounded. Apply `Take` before enumerating it fully.

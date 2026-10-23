@@ -49,10 +49,10 @@ namespace Indexer.Linq
 
             public IReadOnlyList<TSource> TakeLast(int count) =>
                 count <= 0 ? (TSource[])[]
-                    : count == 1 ? (TSource[])[element]
+                    : count == 1 ? new SingleElementIndexer<TSource>(element)
                     : new TakeLastIndexer<TSource>(this, count);
 
-            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>(source, [element], second);
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>(source, new SingleElementIndexer<TSource>(element), second);
 
             public override bool Contains(TSource item) => source.Contains(item) || EqualityComparer<TSource>.Default.Equals(element, item);
 
@@ -209,10 +209,10 @@ namespace Indexer.Linq
 
             public IReadOnlyList<TSource> Take(int count) =>
                 count <= 0 ? (TSource[])[]
-                    : count == 1 ? (TSource[])[element]
+                    : count == 1 ? new SingleElementIndexer<TSource>(element)
                     : new TakeIndexer<TSource>(this, count);
 
-            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>([element], source, second);
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>(new SingleElementIndexer<TSource>(element), source, second);
 
             public override bool Contains(TSource item) => EqualityComparer<TSource>.Default.Equals(element, item) || source.Contains(item);
 
@@ -336,7 +336,7 @@ namespace Indexer.Linq
         /// Represents the insertion of one or more items before or after an <see cref="IReadOnlyList{TSource}"/>.
         /// </summary>
         /// <typeparam name="TSource">The type of the elements of the source list.</typeparam>
-        private sealed partial class AppendPrependIndexer<TSource>(IReadOnlyList<TSource> source, TSource prepended, TSource appended) : IndexerBase<TSource>, IAppendPrepend<TSource>, ISkip<TSource>, ISkipLast<TSource>, ITake<TSource>, ITakeLast<TSource>, IConcat<TSource>
+        private sealed partial class AppendPrependIndexer<TSource>(IReadOnlyList<TSource> source, TSource prepended, TSource appended) : IndexerBase<TSource>, IAppendPrepend<TSource>, ISkipBoth<TSource>, ITake<TSource>, ITakeLast<TSource>, IConcat<TSource>
         {
             public override TSource this[int index] => index == 0 ? prepended : index == source.Count + 1 ? appended : source[index - 1];
 
@@ -368,15 +368,15 @@ namespace Indexer.Linq
 
             public IReadOnlyList<TSource> Take(int count) =>
                 count <= 0 ? (TSource[])[]
-                    : count == 1 ? (TSource[])[prepended]
+                    : count == 1 ? new SingleElementIndexer<TSource>(prepended)
                     : new TakeIndexer<TSource>(this, count);
 
             public IReadOnlyList<TSource> TakeLast(int count) =>
                 count <= 0 ? (TSource[])[]
-                    : count == 1 ? (TSource[])[appended]
+                    : count == 1 ? new SingleElementIndexer<TSource>(appended)
                     : new TakeLastIndexer<TSource>(this, count);
 
-            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>([prepended], source, [appended], second);
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>(new SingleElementIndexer<TSource>(prepended), source, new SingleElementIndexer<TSource>(appended), second);
 
             public override bool Contains(TSource item) => EqualityComparer<TSource>.Default.Equals(prepended, item) || source.Contains(item) || EqualityComparer<TSource>.Default.Equals(appended, item);
 
@@ -587,6 +587,37 @@ namespace Indexer.Linq
                         default:
                             return false;
                     }
+                }
+            }
+        }
+
+        private sealed partial class SingleElementIndexer<TSource>(TSource element) : IndexerBase<TSource>, IAppendPrepend<TSource>, ISkipBoth<TSource>, ITake<TSource>, ITakeLast<TSource>, IConcat<TSource>
+        {
+            public override TSource this[int index] => index == 0 ? element : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
+            public override int Count => 1;
+            public IReadOnlyList<TSource> Append(TSource _element) => (TSource[])[element, _element];
+            public IReadOnlyList<TSource> Prepend(TSource _element) => (TSource[])[_element, element];
+            public IReadOnlyList<TSource> Skip(int _count) => _count <= 0 ? this : (TSource[])[];
+            public IReadOnlyList<TSource> SkipLast(int _count) => _count <= 0 ? this : (TSource[])[];
+            public IReadOnlyList<TSource> Take(int _count) => _count <= 0 ? (TSource[])[] : this;
+            public IReadOnlyList<TSource> TakeLast(int _count) => _count <= 0 ? (TSource[])[] : this;
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new PrependIndexer<TSource>(second, element);
+            public override bool Contains(TSource item) => EqualityComparer<TSource>.Default.Equals(element, item);
+            public override int IndexOf(TSource item) => EqualityComparer<TSource>.Default.Equals(element, item) ? 0 : -1;
+            public override void CopyTo(TSource[] array, int arrayIndex) => array[arrayIndex] = element;
+            public sealed override IEnumerator<TSource> GetEnumerator() => new IndexerEnumerator(element);
+            private sealed class IndexerEnumerator(TSource element) : IndexerEnumeratorBase
+            {
+                public override TSource Current => _index == 0 ? element : throw new InvalidOperationException();
+                public override bool MoveNext()
+                {
+                    if (_index < 0)
+                    {
+                        _index = 0;
+                        return true;
+                    }
+                    _index = 1;
+                    return false;
                 }
             }
         }

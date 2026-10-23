@@ -143,7 +143,6 @@ namespace Indexer.Linq
 
             public override int IndexOf(TResult item)
             {
-                int count = Count;
                 for (int i = 0; i < count; i++)
                 {
                     if (EqualityComparer<TResult>.Default.Equals(selector(i), item))
@@ -156,10 +155,9 @@ namespace Indexer.Linq
 
             public override void CopyTo(TResult[] array, int arrayIndex)
             {
-                int count = Count;
                 for (int i = 0; i < count; i++)
                 {
-                    array[arrayIndex + i] = selector(i);
+                    array[arrayIndex++] = selector(i);
                 }
             }
 
@@ -220,9 +218,10 @@ namespace Indexer.Linq
 
             public override bool Contains(TResult item)
             {
-                for (int i = 0; i < count; i++)
+                int i = count;
+                for (int current = offset; i > 0; i--)
                 {
-                    if (EqualityComparer<TResult>.Default.Equals(selector(offset + i), item))
+                    if (EqualityComparer<TResult>.Default.Equals(selector(current++), item))
                     {
                         return true;
                     }
@@ -232,12 +231,12 @@ namespace Indexer.Linq
 
             public override int IndexOf(TResult item)
             {
-                int count = Count;
-                for (int i = 0; i < count; i++)
+                int i = count;
+                for (int current = offset; i > 0; i--)
                 {
-                    if (EqualityComparer<TResult>.Default.Equals(selector(offset + i), item))
+                    if (EqualityComparer<TResult>.Default.Equals(selector(current++), item))
                     {
-                        return i;
+                        return count - i;
                     }
                 }
                 return -1;
@@ -245,10 +244,10 @@ namespace Indexer.Linq
 
             public override void CopyTo(TResult[] array, int arrayIndex)
             {
-                int count = Count;
-                for (int i = 0; i < count; i++)
+                int i = count;
+                for (int current = offset; i > 0; i--)
                 {
-                    array[arrayIndex + i] = selector(offset + i);
+                    array[arrayIndex++] = selector(current++);
                 }
             }
 
@@ -256,18 +255,28 @@ namespace Indexer.Linq
 
             private sealed partial class IndexerEnumerator(int offset, int count, Func<int, TResult> selector) : IndexerEnumeratorBase
             {
-                public override TResult Current => selector(offset + _index);
+                private readonly int offset = offset;
+                private int current = offset;
+                public override TResult Current => selector(current);
 
                 public override bool MoveNext()
                 {
-                    int index = _index + 1, length = count;
-                    if ((uint)index < (uint)length)
+                    if (++_index == 0)
                     {
-                        _index = index;
                         return true;
                     }
-                    _index = length;
+                    else if (_index < count)
+                    {
+                        current++;
+                        return true;
+                    }
                     return false;
+                }
+
+                public override void Reset()
+                {
+                    base.Reset();
+                    current = offset;
                 }
             }
         }
