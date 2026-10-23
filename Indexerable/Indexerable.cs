@@ -78,39 +78,46 @@ namespace Indexer.Linq
         /// <returns>An empty <see cref="IReadOnlyList{TResult}"/>.</returns>
         public static IReadOnlyList<TResult> Empty<TResult>() => EmptyIndexer<TResult>.Instance;
 
-        private sealed partial class EmptyIndexer<TSource>() : IndexerBase<TSource>, ISelectWithIndex<TSource>, IAppendPrepend<TSource>, ISkipBoth<TSource>, ITake<TSource>, ITakeLast<TSource>, IConcat<TSource>
+        private sealed partial class EmptyIndexer<T>() : IndexerBase<T>, ISelectWithIndex<T>, IAppendPrepend<T>, ISkipBoth<T>, ITake<T>, ITakeLast<T>, IConcat<T>
         {
-            public static EmptyIndexer<TSource> Instance { get; } = new();
-            public override TSource this[int index] => throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
+            public static EmptyIndexer<T> Instance { get; } = new();
+            public override T this[int index] => throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
             public override int Count => 0;
-            public IReadOnlyList<TResult> Select<TResult>(Func<TSource, TResult> _selector) => new EmptyIndexer<TResult>();
-            public IReadOnlyList<TResult> Select<TResult>(Func<TSource, int, TResult> _selector) => new EmptyIndexer<TResult>();
-            public IReadOnlyList<TSource> Append(TSource element) => new SingleElementIndexer<TSource>(element);
-            public IReadOnlyList<TSource> Prepend(TSource element) => new SingleElementIndexer<TSource>(element);
-            public IReadOnlyList<TSource> Skip(int count) => this;
-            public IReadOnlyList<TSource> SkipLast(int count) => this;
-            public IReadOnlyList<TSource> Take(int count) => this;
-            public IReadOnlyList<TSource> TakeLast(int count) => this;
-            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => second;
-            public override bool Contains(TSource item) => false;
-            public override int IndexOf(TSource item) => -1;
-            public override void CopyTo(TSource[] array, int arrayIndex)
+            public IReadOnlyList<TResult> Select<TResult>(Func<T, TResult> _selector) => new EmptyIndexer<TResult>();
+            public IReadOnlyList<TResult> Select<TResult>(Func<T, int, TResult> _selector) => new EmptyIndexer<TResult>();
+            public IReadOnlyList<T> Append(T element) => new SingleElementIndexer<T>(element);
+            public IReadOnlyList<T> Prepend(T element) => new SingleElementIndexer<T>(element);
+            public IReadOnlyList<T> Skip(int count) => this;
+            public IReadOnlyList<T> SkipLast(int count) => this;
+            public IReadOnlyList<T> Take(int count) => this;
+            public IReadOnlyList<T> TakeLast(int count) => this;
+            public IReadOnlyList<T> Concat(IReadOnlyList<T> second) => second;
+            public override bool Contains(T item) => false;
+            public override int IndexOf(T item) => -1;
+            public override void CopyTo(T[] array, int arrayIndex)
             {
                 if (array is null) { ThrowHelper.ThrowArgumentNullException(nameof(array)); }
                 if (arrayIndex < 0) { ThrowHelper.ThrowArgumentOutOfRangeException(nameof(arrayIndex)); }
                 if (arrayIndex > array.Length) { ThrowHelper.ThrowArgumentException_LongerThanDestArray(nameof(array)); }
             }
-            public sealed override IEnumerator<TSource> GetEnumerator() => IndexerEnumerator.Instance;
-            private sealed partial class IndexerEnumerator : IEnumerator<TSource>
+            public sealed override IEnumerator<T> GetEnumerator() => IndexerEnumerator.Instance;
+            private sealed partial class IndexerEnumerator : IEnumerator<T>
             {
                 public static IndexerEnumerator Instance { get; } = new();
-                public TSource Current => throw new InvalidOperationException();
+                public T Current => throw new InvalidOperationException();
                 public bool MoveNext() => false;
                 public void Reset() { }
                 object? IEnumerator.Current => Current;
                 void IDisposable.Dispose() { }
             }
         }
+
+#if COMP_NETSTANDARD2_1
+        private sealed partial class EmptyIndexer<T> : ITakeRange<T>
+        {
+            public IReadOnlyList<T> Take(Range range) => this;
+        }
+#endif
 
         /// <summary>
         /// Creates a read-only list whose elements are produced by a <paramref name="selector"/>.
@@ -134,15 +141,15 @@ namespace Indexer.Linq
                 index >= 0 && index < count
                     ? selector(index)
                     : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
-            
+
             public IReadOnlyList<TResult2> Select<TResult2>(Func<TResult, TResult2> _selector) =>
                 new CreateIndexer<TResult2>(count, selector.CombineSelectors(_selector));
-            
+
             public IReadOnlyList<TResult2> Select<TResult2>(Func<TResult, int, TResult2> _selector) =>
                 new CreateIndexer<TResult2>(count, selector.CombineSelectors(_selector));
 
-            public IReadOnlyList<TResult> Skip(int _count) => 
-                _count <= 0 ? this 
+            public IReadOnlyList<TResult> Skip(int _count) =>
+                _count <= 0 ? this
                     : _count >= count ? new EmptyIndexer<TResult>()
                     : new CreateOffsetIndexer<TResult>(_count, count - _count, selector);
 
@@ -200,6 +207,19 @@ namespace Indexer.Linq
                 public override TResult Current => selector(_index);
             }
         }
+
+#if COMP_NETSTANDARD2_1
+        private sealed partial class CreateIndexer<TResult> : ITakeRange<TResult>
+        {
+            public IReadOnlyList<TResult> Take(Range range)
+            {
+                int length = range.TryGetOffsetAndLength(count, out int offset);
+                return length == 0 ? new EmptyIndexer<TResult>()
+                    : length == count ? this
+                    : new CreateOffsetIndexer<TResult>(offset, length, selector);
+            }
+        }
+#endif
 
         private sealed partial class CreateOffsetIndexer<TResult>(int offset, int count, Func<int, TResult> selector) : RangeOffsetIndexerBase<TResult>(offset, count), ISelectWithIndex<TResult>, ISkipBoth<TResult>, ITake<TResult>, ITakeLast<TResult>
         {
@@ -276,5 +296,18 @@ namespace Indexer.Linq
                 public override TResult Current => selector(current);
             }
         }
+
+#if COMP_NETSTANDARD2_1
+        private sealed partial class CreateOffsetIndexer<TResult> : ITakeRange<TResult>
+        {
+            public IReadOnlyList<TResult> Take(Range range)
+            {
+                int length = range.TryGetOffsetAndLength(count, out int offset);
+                return length == 0 ? new EmptyIndexer<TResult>()
+                    : length == count ? this
+                    : new CreateOffsetIndexer<TResult>(this.offset + offset, length, selector);
+            }
+        }
+#endif
     }
 }

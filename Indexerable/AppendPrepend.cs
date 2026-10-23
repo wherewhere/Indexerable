@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -591,35 +592,37 @@ namespace Indexer.Linq
             }
         }
 
-        private sealed partial class SingleElementIndexer<TSource>(TSource element) : IndexerBase<TSource>, IAppendPrepend<TSource>, ISkipBoth<TSource>, ITake<TSource>, ITakeLast<TSource>, IConcat<TSource>
+        private sealed partial class SingleElementIndexer<T>(T element) : IndexerBase<T>, IAppendPrepend<T>, ISkipBoth<T>, ITake<T>, ITakeLast<T>, IConcat<T>
         {
-            public override TSource this[int index] => index == 0 ? element : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
+            public override T this[int index] => index == 0 ? element : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
             public override int Count => 1;
-            public IReadOnlyList<TSource> Append(TSource _element) => (TSource[])[element, _element];
-            public IReadOnlyList<TSource> Prepend(TSource _element) => (TSource[])[_element, element];
-            public IReadOnlyList<TSource> Skip(int _count) => _count <= 0 ? this : new EmptyIndexer<TSource>();
-            public IReadOnlyList<TSource> SkipLast(int _count) => _count <= 0 ? this : new EmptyIndexer<TSource>();
-            public IReadOnlyList<TSource> Take(int _count) => _count <= 0 ? new EmptyIndexer<TSource>() : this;
-            public IReadOnlyList<TSource> TakeLast(int _count) => _count <= 0 ? new EmptyIndexer<TSource>() : this;
-            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new PrependIndexer<TSource>(second, element);
-            public override bool Contains(TSource item) => EqualityComparer<TSource>.Default.Equals(element, item);
-            public override int IndexOf(TSource item) => EqualityComparer<TSource>.Default.Equals(element, item) ? 0 : -1;
-            public override void CopyTo(TSource[] array, int arrayIndex) => array[arrayIndex] = element;
-            public sealed override IEnumerator<TSource> GetEnumerator() => new IndexerEnumerator(element);
-            private sealed class IndexerEnumerator(TSource element) : IndexerEnumeratorBase
+            public IReadOnlyList<T> Append(T _element) => (T[])[element, _element];
+            public IReadOnlyList<T> Prepend(T _element) => (T[])[_element, element];
+            public IReadOnlyList<T> Skip(int _count) => _count <= 0 ? this : new EmptyIndexer<T>();
+            public IReadOnlyList<T> SkipLast(int _count) => _count <= 0 ? this : new EmptyIndexer<T>();
+            public IReadOnlyList<T> Take(int _count) => _count <= 0 ? new EmptyIndexer<T>() : this;
+            public IReadOnlyList<T> TakeLast(int _count) => _count <= 0 ? new EmptyIndexer<T>() : this;
+            public IReadOnlyList<T> Concat(IReadOnlyList<T> second) => new PrependIndexer<T>(second, element);
+            public override bool Contains(T item) => EqualityComparer<T>.Default.Equals(element, item);
+            public override int IndexOf(T item) => EqualityComparer<T>.Default.Equals(element, item) ? 0 : -1;
+            public override void CopyTo(T[] array, int arrayIndex) => array[arrayIndex] = element;
+            public sealed override IEnumerator<T> GetEnumerator() => new IndexerEnumerator(element);
+            private sealed class IndexerEnumerator(T element) : IEnumerator<T>
             {
-                public override TSource Current => _index == 0 ? element : throw new InvalidOperationException();
-                public override bool MoveNext()
-                {
-                    if (_index < 0)
-                    {
-                        _index = 0;
-                        return true;
-                    }
-                    _index = 1;
-                    return false;
-                }
+                private bool _moveNextCalled;
+                public T Current => element;
+                public bool MoveNext() => !_moveNextCalled && (_moveNextCalled = true);
+                public void Reset() => _moveNextCalled = false;
+                object? IEnumerator.Current => Current;
+                void IDisposable.Dispose() { }
             }
         }
+
+#if COMP_NETSTANDARD2_1
+        private sealed partial class SingleElementIndexer<T> : ITakeRange<T>
+        {
+            public IReadOnlyList<T> Take(Range range) => range.TryGetOffsetAndLength(1, out _) <= 0 ? new EmptyIndexer<T>() : this;
+        }
+#endif
     }
 }

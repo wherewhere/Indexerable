@@ -43,13 +43,20 @@ namespace Indexer.Linq
         /// <param name="range">The range of elements to return, which has start and end indexes either from the start or the end.</param>
         /// <exception cref="ArgumentNullException"><paramref name="source" /> is <see langword="null" />.</exception>
         /// <returns>A read-only list that contains the specified <paramref name="range"/> of elements from <paramref name="source"/>.</returns>
-        /// <remarks>
-        /// <para>The returned list is a view over <paramref name="source"/>; elements are accessed as needed and are not copied.</para>
-        /// </remarks>
+        /// <remarks>The returned list is a view over <paramref name="source"/>; elements are accessed as needed and are not copied.</remarks>
         public static IReadOnlyList<TSource> Take<TSource>(this IReadOnlyList<TSource> source, Range range)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
-            return new TakeRangeIndexer<TSource>(source, range);
+            return source is ITakeRange<TSource> take ? take.Take(range) : new TakeRangeIndexer<TSource>(source, range);
+        }
+
+        private interface ITakeRange<out TSource> : IReadOnlyList<TSource>
+        {
+            /// <inheritdoc cref="Take(System.Range)"/>
+            IReadOnlyList<TSource> this[Range range] => Take(range);
+
+            /// <inheritdoc cref="Take{TSource}(IReadOnlyList{TSource}, System.Range)"/>
+            IReadOnlyList<TSource> Take(Range range);
         }
 
         /// <summary>
@@ -66,13 +73,14 @@ namespace Indexer.Linq
         private sealed partial class TakeRangeIndexer<TSource>(IReadOnlyList<TSource> source, Range range) : SkipIndexerBase<TSource>(source)
         {
             public override int Count => GetCount(out _);
-            protected override int GetCount(out int offset)
-            {
-                int sourceCount = source.Count;
-                offset = Math.Max(0, range.Start.GetOffset(sourceCount));
-                int end = Math.Min(sourceCount, range.End.GetOffset(sourceCount));
-                return end > offset ? end - offset : 0;
-            }
+            protected override int GetCount(out int offset) => range.TryGetOffsetAndLength(source.Count, out offset);
+        }
+
+        private static int TryGetOffsetAndLength(this in Range range, int length, out int offset)
+        {
+            offset = Math.Max(0, range.Start.GetOffset(length));
+            int end = Math.Min(length, range.End.GetOffset(length));
+            return end > offset ? end - offset : 0;
         }
 #endif
 

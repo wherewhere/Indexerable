@@ -107,6 +107,19 @@ namespace Indexer.Linq
             }
         }
 
+#if COMP_NETSTANDARD2_1
+        private sealed partial class RangeIndexer : ITakeRange<int>
+        {
+            public IReadOnlyList<int> Take(Range range)
+            {
+                int length = range.TryGetOffsetAndLength(count, out int offset);
+                return length == 0 ? new EmptyIndexer<int>()
+                    : length == count ? this
+                    : new RangeOffsetIndexer(offset, length);
+            }
+        }
+#endif
+
         private abstract partial class RangeOffsetIndexerBase<TSource>(int offset, int count) : RangeIndexerBase<TSource>(count)
         {
             protected readonly int offset = offset;
@@ -198,5 +211,18 @@ namespace Indexer.Linq
                 public override int Current => current;
             }
         }
+
+#if COMP_NETSTANDARD2_1
+        private sealed partial class RangeOffsetIndexer : ITakeRange<int>
+        {
+            public IReadOnlyList<int> Take(Range range)
+            {
+                int length = range.TryGetOffsetAndLength(count, out int offset);
+                return length == 0 ? new EmptyIndexer<int>()
+                    : length == count ? this
+                    : new RangeOffsetIndexer(this.offset + offset, length);
+            }
+        }
+#endif
     }
 }

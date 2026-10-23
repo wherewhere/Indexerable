@@ -22,7 +22,7 @@ namespace Indexer.Linq
             return new InfiniteSequenceIndexer<T>(start, step);
         }
 
-        private sealed partial class InfiniteSequenceIndexer<T>(T start, T step) : IndexerBase<T> where T : INumberBase<T>
+        private sealed partial class InfiniteSequenceIndexer<T>(T start, T step) : IndexerBase<T>, ISkip<T> where T : INumberBase<T>
         {
             public override T this[int index]
             {
@@ -41,23 +41,49 @@ namespace Indexer.Linq
                             return result;
                         }
 #else
-                        T mult = step * T.CreateTruncating(index);
-                        if (!T.IsInfinity(mult))
+                        T result = step * T.CreateTruncating(index);
+                        if (!T.IsInfinity(result))
                         {
-                            return start + mult;
+                            return start + result;
                         }
 #endif
-                        T temp = start;
+                        result = start;
                         for (int i = 0; i < index; i++)
                         {
-                            temp += step;
+                            result += step;
                         }
-                        return temp;
+                        return result;
                     }
                 }
             }
 
             public override int Count => int.MaxValue;
+
+            public IReadOnlyList<T> Skip(int count)
+            {
+                if (count <= 0) { return this; }
+#if NET9_0_OR_GREATER
+                T result = T.MultiplyAddEstimate(step, T.CreateTruncating(count), start);
+                if (!T.IsInfinity(result))
+                {
+                    goto end;
+                }
+#else
+                T result = step * T.CreateTruncating(count);
+                if (!T.IsInfinity(result))
+                {
+                    result = start + result;
+                    goto end;
+                }
+#endif
+                result = start;
+                for (int i = 0; i < count; i++)
+                {
+                    result += step;
+                }
+            end:
+                return new InfiniteSequenceIndexer<T>(result, step);
+            }
 
             public override bool Contains(T item)
             {
