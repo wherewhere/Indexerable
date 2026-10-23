@@ -17,7 +17,7 @@ namespace Indexer.Linq
         public static IReadOnlyList<TSource> Take<TSource>(this IReadOnlyList<TSource> source, int count)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
-            return count <= 0 ? (TSource[])[]
+            return count <= 0 ? new EmptyIndexer<TSource>()
                 : source is ITake<TSource> take ? take.Take(count)
                 : new TakeIndexer<TSource>(source, count);
         }
@@ -31,7 +31,7 @@ namespace Indexer.Linq
         private sealed partial class TakeIndexer<TSource>(IReadOnlyList<TSource> source, int count) : TakeIndexerBase<TSource>(source), ITake<TSource>
         {
             public override int Count => Math.Min(count, source.Count);
-            public IReadOnlyList<TSource> Take(int _count) => _count <= 0 ? (TSource[])[] : new TakeIndexer<TSource>(source, Math.Min(_count, count));
+            public IReadOnlyList<TSource> Take(int _count) => _count <= 0 ? new EmptyIndexer<TSource>() : new TakeIndexer<TSource>(source, Math.Min(_count, count));
         }
 
 #if COMP_NETSTANDARD2_1
@@ -88,7 +88,7 @@ namespace Indexer.Linq
         public static IReadOnlyList<TSource> TakeLast<TSource>(this IReadOnlyList<TSource> source, int count)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
-            return count <= 0 ? (TSource[])[]
+            return count <= 0 ? new EmptyIndexer<TSource>()
                 : source is ITakeLast<TSource> take ? take.TakeLast(count)
                 : new TakeLastIndexer<TSource>(source, count);
         }
@@ -102,7 +102,7 @@ namespace Indexer.Linq
         private sealed partial class TakeLastIndexer<TSource>(IReadOnlyList<TSource> source, int count) : SkipIndexerBase<TSource>(source), ITakeLast<TSource>
         {
             public override int Count => Math.Min(count, source.Count);
-            public IReadOnlyList<TSource> TakeLast(int _count) => _count <= 0 ? (TSource[])[] : new TakeLastIndexer<TSource>(source, Math.Min(_count, count));
+            public IReadOnlyList<TSource> TakeLast(int _count) => _count <= 0 ? new EmptyIndexer<TSource>() : new TakeLastIndexer<TSource>(source, Math.Min(_count, count));
             protected override int GetCount(out int offset)
             {
                 int sourceCount = source.Count, takeCount = Math.Min(count, sourceCount);

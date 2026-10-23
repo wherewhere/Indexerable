@@ -76,7 +76,41 @@ namespace Indexer.Linq
         /// </summary>
         /// <typeparam name="TResult">The type of the elements of the list.</typeparam>
         /// <returns>An empty <see cref="IReadOnlyList{TResult}"/>.</returns>
-        public static IReadOnlyList<TResult> Empty<TResult>() => (TResult[])[];
+        public static IReadOnlyList<TResult> Empty<TResult>() => EmptyIndexer<TResult>.Instance;
+
+        private sealed partial class EmptyIndexer<TSource>() : IndexerBase<TSource>, ISelectWithIndex<TSource>, IAppendPrepend<TSource>, ISkipBoth<TSource>, ITake<TSource>, ITakeLast<TSource>, IConcat<TSource>
+        {
+            public static EmptyIndexer<TSource> Instance { get; } = new();
+            public override TSource this[int index] => throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
+            public override int Count => 0;
+            public IReadOnlyList<TResult> Select<TResult>(Func<TSource, TResult> _selector) => new EmptyIndexer<TResult>();
+            public IReadOnlyList<TResult> Select<TResult>(Func<TSource, int, TResult> _selector) => new EmptyIndexer<TResult>();
+            public IReadOnlyList<TSource> Append(TSource element) => new SingleElementIndexer<TSource>(element);
+            public IReadOnlyList<TSource> Prepend(TSource element) => new SingleElementIndexer<TSource>(element);
+            public IReadOnlyList<TSource> Skip(int count) => this;
+            public IReadOnlyList<TSource> SkipLast(int count) => this;
+            public IReadOnlyList<TSource> Take(int count) => this;
+            public IReadOnlyList<TSource> TakeLast(int count) => this;
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => second;
+            public override bool Contains(TSource item) => false;
+            public override int IndexOf(TSource item) => -1;
+            public override void CopyTo(TSource[] array, int arrayIndex)
+            {
+                if (array is null) { ThrowHelper.ThrowArgumentNullException(nameof(array)); }
+                if (arrayIndex < 0) { ThrowHelper.ThrowArgumentOutOfRangeException(nameof(arrayIndex)); }
+                if (arrayIndex > array.Length) { ThrowHelper.ThrowArgumentException_LongerThanDestArray(nameof(array)); }
+            }
+            public sealed override IEnumerator<TSource> GetEnumerator() => IndexerEnumerator.Instance;
+            private sealed partial class IndexerEnumerator : IEnumerator<TSource>
+            {
+                public static IndexerEnumerator Instance { get; } = new();
+                public TSource Current => throw new InvalidOperationException();
+                public bool MoveNext() => false;
+                public void Reset() { }
+                object? IEnumerator.Current => Current;
+                void IDisposable.Dispose() { }
+            }
+        }
 
         /// <summary>
         /// Creates a read-only list whose elements are produced by a <paramref name="selector"/>.
@@ -91,18 +125,16 @@ namespace Indexer.Linq
         {
             if (count < 0) { ThrowHelper.ThrowArgumentOutOfRangeException(nameof(count)); }
             if (selector is null) { ThrowHelper.ThrowArgumentNullException(nameof(selector)); }
-            return count == 0 ? (TResult[])[] : new CreateIndexer<TResult>(count, selector);
+            return count == 0 ? new EmptyIndexer<TResult>() : new CreateIndexer<TResult>(count, selector);
         }
 
-        private sealed partial class CreateIndexer<TResult>(int count, Func<int, TResult> selector) : IndexerBase<TResult>, ISelectWithIndex<TResult>, ISkipBoth<TResult>, ITake<TResult>, ITakeLast<TResult>
+        private sealed partial class CreateIndexer<TResult>(int count, Func<int, TResult> selector) : RangeIndexerBase<TResult>(count), ISelectWithIndex<TResult>, ISkipBoth<TResult>, ITake<TResult>, ITakeLast<TResult>
         {
             public override TResult this[int index] =>
                 index >= 0 && index < count
                     ? selector(index)
                     : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
             
-            public override int Count => count;
-
             public IReadOnlyList<TResult2> Select<TResult2>(Func<TResult, TResult2> _selector) =>
                 new CreateIndexer<TResult2>(count, selector.CombineSelectors(_selector));
             
@@ -111,21 +143,21 @@ namespace Indexer.Linq
 
             public IReadOnlyList<TResult> Skip(int _count) => 
                 _count <= 0 ? this 
-                    : _count >= count ? (TResult[])[] 
+                    : _count >= count ? new EmptyIndexer<TResult>()
                     : new CreateOffsetIndexer<TResult>(_count, count - _count, selector);
 
             public IReadOnlyList<TResult> SkipLast(int _count) =>
                 _count <= 0 ? this
-                    : _count >= count ? (TResult[])[]  
+                    : _count >= count ? new EmptyIndexer<TResult>()
                     : new CreateIndexer<TResult>(count - _count, selector);
 
             public IReadOnlyList<TResult> Take(int _count) =>
-                _count <= 0 ? (TResult[])[] 
+                _count <= 0 ? new EmptyIndexer<TResult>()
                     : _count >= count ? this
                     : new CreateIndexer<TResult>(_count, selector);
 
             public IReadOnlyList<TResult> TakeLast(int _count) =>
-                _count <= 0 ? (TResult[])[] 
+                _count <= 0 ? new EmptyIndexer<TResult>()
                     : _count >= count ? this
                     : new CreateOffsetIndexer<TResult>(count - _count, _count, selector);
 
@@ -163,32 +195,18 @@ namespace Indexer.Linq
 
             public sealed override IEnumerator<TResult> GetEnumerator() => new IndexerEnumerator(count, selector);
 
-            private sealed partial class IndexerEnumerator(int count, Func<int, TResult> selector) : IndexerEnumeratorBase
+            private sealed partial class IndexerEnumerator(int count, Func<int, TResult> selector) : RangeIndexerEnumerator(count)
             {
                 public override TResult Current => selector(_index);
-
-                public override bool MoveNext()
-                {
-                    int index = _index + 1, length = count;
-                    if ((uint)index < (uint)length)
-                    {
-                        _index = index;
-                        return true;
-                    }
-                    _index = length;
-                    return false;
-                }
             }
         }
 
-        private sealed partial class CreateOffsetIndexer<TResult>(int offset, int count, Func<int, TResult> selector) : IndexerBase<TResult>, ISelectWithIndex<TResult>, ISkipBoth<TResult>, ITake<TResult>, ITakeLast<TResult>
+        private sealed partial class CreateOffsetIndexer<TResult>(int offset, int count, Func<int, TResult> selector) : RangeOffsetIndexerBase<TResult>(offset, count), ISelectWithIndex<TResult>, ISkipBoth<TResult>, ITake<TResult>, ITakeLast<TResult>
         {
             public override TResult this[int index] =>
                 index >= 0 && index < count
                     ? selector(offset + index)
                     : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
-
-            public override int Count => count;
 
             public IReadOnlyList<TResult2> Select<TResult2>(Func<TResult, TResult2> _selector) =>
                 new CreateOffsetIndexer<TResult2>(offset, count, selector.CombineSelectors(_selector));
@@ -198,21 +216,21 @@ namespace Indexer.Linq
 
             public IReadOnlyList<TResult> Skip(int _count) =>
                 _count <= 0 ? this
-                    : _count >= count ? (TResult[])[]
+                    : _count >= count ? new EmptyIndexer<TResult>()
                     : new CreateOffsetIndexer<TResult>(offset + _count, count - _count, selector);
 
             public IReadOnlyList<TResult> SkipLast(int _count) =>
                 _count <= 0 ? this
-                    : _count >= count ? (TResult[])[]
+                    : _count >= count ? new EmptyIndexer<TResult>()
                     : new CreateOffsetIndexer<TResult>(offset, count - _count, selector);
 
             public IReadOnlyList<TResult> Take(int _count) =>
-                _count <= 0 ? (TResult[])[]
+                _count <= 0 ? new EmptyIndexer<TResult>()
                     : _count >= count ? this
                     : new CreateOffsetIndexer<TResult>(offset, _count, selector);
 
             public IReadOnlyList<TResult> TakeLast(int _count) =>
-                _count <= 0 ? (TResult[])[]
+                _count <= 0 ? new EmptyIndexer<TResult>()
                     : _count >= count ? this
                     : new CreateOffsetIndexer<TResult>(offset + (count - _count), _count, selector);
 
@@ -253,31 +271,9 @@ namespace Indexer.Linq
 
             public sealed override IEnumerator<TResult> GetEnumerator() => new IndexerEnumerator(offset, count, selector);
 
-            private sealed partial class IndexerEnumerator(int offset, int count, Func<int, TResult> selector) : IndexerEnumeratorBase
+            private sealed partial class IndexerEnumerator(int offset, int count, Func<int, TResult> selector) : RangeOffsetIndexerEnumerator(offset, count)
             {
-                private readonly int offset = offset;
-                private int current = offset;
                 public override TResult Current => selector(current);
-
-                public override bool MoveNext()
-                {
-                    if (++_index == 0)
-                    {
-                        return true;
-                    }
-                    else if (_index < count)
-                    {
-                        current++;
-                        return true;
-                    }
-                    return false;
-                }
-
-                public override void Reset()
-                {
-                    base.Reset();
-                    current = offset;
-                }
             }
         }
     }

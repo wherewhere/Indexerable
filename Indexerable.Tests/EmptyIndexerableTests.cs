@@ -52,7 +52,7 @@ namespace Indexer.Linq.Tests
             Assert.Throws<NotSupportedException>(list.Clear);
             Assert.Throws<NotSupportedException>(() => list.Remove(42));
             Assert.Throws<NotSupportedException>(() => list.RemoveAt(0));
-            AssertExtensions.Throws<ArgumentOutOfRangeException>("index", () => list[0] = 42);
+            Assert.Throws<NotSupportedException>(() => list[0] = 42);
             AssertExtensions.Throws<ArgumentOutOfRangeException>("index", () => _ = list[0]);
             AssertExtensions.Throws<ArgumentOutOfRangeException>("index", () => _ = roList[0]);
 
@@ -64,7 +64,7 @@ namespace Indexer.Linq.Tests
             Assert.Equal(-1, list.IndexOf(42));
 
             list.CopyTo([], 0);
-            AssertExtensions.Throws<ArgumentException>("destinationArray", () => list.CopyTo([], 1));
+            AssertExtensions.Throws<ArgumentException>("array", () => list.CopyTo([], 1));
             int[] array = [42];
             list.CopyTo(array, 0);
             Assert.Equal(42, array[0]);

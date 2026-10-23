@@ -18,7 +18,7 @@ namespace Indexer.Linq
             if (count < 0) { ThrowHelper.ThrowArgumentOutOfRangeException(nameof(count)); }
             return count switch
             {
-                0 => (TResult[])[],
+                0 => new EmptyIndexer<TResult>(),
                 1 => new SingleElementIndexer<TResult>(element),
                 _ => new RepeatIndexer<TResult>(element, count),
             };
@@ -32,9 +32,9 @@ namespace Indexer.Linq
         {
             public override TResult this[int index] => index >= 0 && index < count ? element : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
             public override int Count => count;
-            public IReadOnlyList<TResult> Skip(int _count) => _count <= 0 ? this : _count >= count ? (TResult[])[] : new RepeatIndexer<TResult>(element, count - _count);
+            public IReadOnlyList<TResult> Skip(int _count) => _count <= 0 ? this : _count >= count ? new EmptyIndexer<TResult>() : new RepeatIndexer<TResult>(element, count - _count);
             public IReadOnlyList<TResult> SkipLast(int _count) => Skip(_count);
-            public IReadOnlyList<TResult> Take(int _count) => _count <= 0 ? (TResult[])[] : new RepeatIndexer<TResult>(element, Math.Min(_count, count));
+            public IReadOnlyList<TResult> Take(int _count) => _count <= 0 ? new EmptyIndexer<TResult>() : new RepeatIndexer<TResult>(element, Math.Min(_count, count));
             public IReadOnlyList<TResult> TakeLast(int _count) => Take(_count);
             public override bool Contains(TResult item) => EqualityComparer<TResult>.Default.Equals(element, item);
             public override int IndexOf(TResult item) => EqualityComparer<TResult>.Default.Equals(element, item) ? 0 : -1;

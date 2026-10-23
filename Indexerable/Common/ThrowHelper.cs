@@ -10,6 +10,8 @@ namespace Indexer.Linq
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException(string name) => throw new ArgumentOutOfRangeException(name);
         [DoesNotReturn]
+        internal static void ThrowArgumentException_LongerThanDestArray(string name) => throw new ArgumentException("Destination array was not long enough. Check the destination index, length, and the array's lower bounds.", name);
+        [DoesNotReturn]
         internal static void ThrowArgumentOutOfRange_IndexMustBeLess(string name) => throw new ArgumentOutOfRangeException(name, "Index was out of range. Must be non-negative and less than the size of the collection.");
 #if !NETCOREAPP2_0_OR_GREATER || !COMP_NETSTANDARD2_1
         [DoesNotReturn]

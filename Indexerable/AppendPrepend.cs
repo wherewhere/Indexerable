@@ -48,7 +48,7 @@ namespace Indexer.Linq
                     : new SkipLastIndexer<TSource>(source, count - 1);
 
             public IReadOnlyList<TSource> TakeLast(int count) =>
-                count <= 0 ? (TSource[])[]
+                count <= 0 ? new EmptyIndexer<TSource>()
                     : count == 1 ? new SingleElementIndexer<TSource>(element)
                     : new TakeLastIndexer<TSource>(this, count);
 
@@ -136,7 +136,7 @@ namespace Indexer.Linq
             public IReadOnlyList<TSource> TakeLast(int count)
             {
                 int length;
-                return count <= 0 ? (TSource[])[]
+                return count <= 0 ? new EmptyIndexer<TSource>()
                     : count < (length = appended.Length) ? appended[^count..]
                     : count == length ? appended
                     : new TakeLastIndexer<TSource>(this, count);
@@ -208,7 +208,7 @@ namespace Indexer.Linq
                     : new SkipIndexer<TSource>(source, count - 1);
 
             public IReadOnlyList<TSource> Take(int count) =>
-                count <= 0 ? (TSource[])[]
+                count <= 0 ? new EmptyIndexer<TSource>()
                     : count == 1 ? new SingleElementIndexer<TSource>(element)
                     : new TakeIndexer<TSource>(this, count);
 
@@ -300,7 +300,7 @@ namespace Indexer.Linq
             public IReadOnlyList<TSource> Take(int count)
             {
                 int length;
-                return count <= 0 ? (TSource[])[]
+                return count <= 0 ? new EmptyIndexer<TSource>()
                     : count < (length = prepended.Length) ? prepended[..count]
                     : count == length ? prepended
                     : new TakeIndexer<TSource>(this, count);
@@ -367,12 +367,12 @@ namespace Indexer.Linq
             }
 
             public IReadOnlyList<TSource> Take(int count) =>
-                count <= 0 ? (TSource[])[]
+                count <= 0 ? new EmptyIndexer<TSource>()
                     : count == 1 ? new SingleElementIndexer<TSource>(prepended)
                     : new TakeIndexer<TSource>(this, count);
 
             public IReadOnlyList<TSource> TakeLast(int count) =>
-                count <= 0 ? (TSource[])[]
+                count <= 0 ? new EmptyIndexer<TSource>()
                     : count == 1 ? new SingleElementIndexer<TSource>(appended)
                     : new TakeLastIndexer<TSource>(this, count);
 
@@ -493,7 +493,7 @@ namespace Indexer.Linq
             public IReadOnlyList<TSource> Take(int count)
             {
                 int length;
-                return count <= 0 ? (TSource[])[]
+                return count <= 0 ? new EmptyIndexer<TSource>()
                     : count < (length = prepended.Length) ? prepended[..count]
                     : count == length ? prepended
                     : new TakeIndexer<TSource>(this, count);
@@ -502,7 +502,7 @@ namespace Indexer.Linq
             public IReadOnlyList<TSource> TakeLast(int count)
             {
                 int length;
-                return count <= 0 ? (TSource[])[]
+                return count <= 0 ? new EmptyIndexer<TSource>()
                     : count < (length = appended.Length) ? appended[^count..]
                     : count == length ? appended
                     : new TakeLastIndexer<TSource>(this, count);
@@ -597,10 +597,10 @@ namespace Indexer.Linq
             public override int Count => 1;
             public IReadOnlyList<TSource> Append(TSource _element) => (TSource[])[element, _element];
             public IReadOnlyList<TSource> Prepend(TSource _element) => (TSource[])[_element, element];
-            public IReadOnlyList<TSource> Skip(int _count) => _count <= 0 ? this : (TSource[])[];
-            public IReadOnlyList<TSource> SkipLast(int _count) => _count <= 0 ? this : (TSource[])[];
-            public IReadOnlyList<TSource> Take(int _count) => _count <= 0 ? (TSource[])[] : this;
-            public IReadOnlyList<TSource> TakeLast(int _count) => _count <= 0 ? (TSource[])[] : this;
+            public IReadOnlyList<TSource> Skip(int _count) => _count <= 0 ? this : new EmptyIndexer<TSource>();
+            public IReadOnlyList<TSource> SkipLast(int _count) => _count <= 0 ? this : new EmptyIndexer<TSource>();
+            public IReadOnlyList<TSource> Take(int _count) => _count <= 0 ? new EmptyIndexer<TSource>() : this;
+            public IReadOnlyList<TSource> TakeLast(int _count) => _count <= 0 ? new EmptyIndexer<TSource>() : this;
             public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new PrependIndexer<TSource>(second, element);
             public override bool Contains(TSource item) => EqualityComparer<TSource>.Default.Equals(element, item);
             public override int IndexOf(TSource item) => EqualityComparer<TSource>.Default.Equals(element, item) ? 0 : -1;
