@@ -138,7 +138,7 @@ namespace Indexer.Linq
         private sealed partial class CreateIndexer<TResult>(int count, Func<int, TResult> selector) : RangeIndexerBase<TResult>(count), ISelectWithIndex<TResult>, ISkipBoth<TResult>, ITake<TResult>, ITakeLast<TResult>
         {
             public override TResult this[int index] =>
-                index >= 0 && index < count
+                index >= 0 && (uint)index < (uint)count
                     ? selector(index)
                     : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
 
@@ -150,22 +150,22 @@ namespace Indexer.Linq
 
             public IReadOnlyList<TResult> Skip(int _count) =>
                 _count <= 0 ? this
-                    : _count >= count ? new EmptyIndexer<TResult>()
+                    : (uint)_count >= (uint)count ? new EmptyIndexer<TResult>()
                     : new CreateOffsetIndexer<TResult>(_count, count - _count, selector);
 
             public IReadOnlyList<TResult> SkipLast(int _count) =>
                 _count <= 0 ? this
-                    : _count >= count ? new EmptyIndexer<TResult>()
+                    : (uint)_count >= (uint)count ? new EmptyIndexer<TResult>()
                     : new CreateIndexer<TResult>(count - _count, selector);
 
             public IReadOnlyList<TResult> Take(int _count) =>
                 _count <= 0 ? new EmptyIndexer<TResult>()
-                    : _count >= count ? this
+                    : (uint)_count >= (uint)count ? this
                     : new CreateIndexer<TResult>(_count, selector);
 
             public IReadOnlyList<TResult> TakeLast(int _count) =>
                 _count <= 0 ? new EmptyIndexer<TResult>()
-                    : _count >= count ? this
+                    : (uint)_count >= (uint)count ? this
                     : new CreateOffsetIndexer<TResult>(count - _count, _count, selector);
 
             public override bool Contains(TResult item)
@@ -224,7 +224,7 @@ namespace Indexer.Linq
         private sealed partial class CreateOffsetIndexer<TResult>(int offset, int count, Func<int, TResult> selector) : RangeOffsetIndexerBase<TResult>(offset, count), ISelectWithIndex<TResult>, ISkipBoth<TResult>, ITake<TResult>, ITakeLast<TResult>
         {
             public override TResult this[int index] =>
-                index >= 0 && index < count
+                index >= 0 && (uint)index < (uint)count
                     ? selector(offset + index)
                     : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
 
@@ -236,22 +236,22 @@ namespace Indexer.Linq
 
             public IReadOnlyList<TResult> Skip(int _count) =>
                 _count <= 0 ? this
-                    : _count >= count ? new EmptyIndexer<TResult>()
+                    : (uint)_count >= (uint)count ? new EmptyIndexer<TResult>()
                     : new CreateOffsetIndexer<TResult>(offset + _count, count - _count, selector);
 
             public IReadOnlyList<TResult> SkipLast(int _count) =>
                 _count <= 0 ? this
-                    : _count >= count ? new EmptyIndexer<TResult>()
+                    : (uint)_count >= (uint)count ? new EmptyIndexer<TResult>()
                     : new CreateOffsetIndexer<TResult>(offset, count - _count, selector);
 
             public IReadOnlyList<TResult> Take(int _count) =>
                 _count <= 0 ? new EmptyIndexer<TResult>()
-                    : _count >= count ? this
+                    : (uint)_count >= (uint)count ? this
                     : new CreateOffsetIndexer<TResult>(offset, _count, selector);
 
             public IReadOnlyList<TResult> TakeLast(int _count) =>
                 _count <= 0 ? new EmptyIndexer<TResult>()
-                    : _count >= count ? this
+                    : (uint)_count >= (uint)count ? this
                     : new CreateOffsetIndexer<TResult>(offset + (count - _count), _count, selector);
 
             public override bool Contains(TResult item)

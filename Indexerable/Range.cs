@@ -39,13 +39,13 @@ namespace Indexer.Linq
             {
                 public sealed override bool MoveNext()
                 {
-                    int index = _index + 1, length = count;
-                    if ((uint)index < (uint)length)
+                    int index = _index + 1;
+                    if ((uint)index < (uint)count)
                     {
                         _index = index;
                         return true;
                     }
-                    _index = length;
+                    _index = count;
                     return false;
                 }
             }
@@ -57,7 +57,7 @@ namespace Indexer.Linq
         private sealed partial class RangeIndexer(int count) : RangeIndexerBase<int>(count), ISelectWithIndex<int>, ISkipBoth<int>, ITake<int>, ITakeLast<int>
         {
             public override int this[int index] =>
-                index >= 0 && index < count
+                index >= 0 && (uint)index < (uint)count
                     ? index
                     : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
 
@@ -69,22 +69,22 @@ namespace Indexer.Linq
 
             public IReadOnlyList<int> Skip(int _count) =>
                 _count <= 0 ? this
-                    : _count >= count ? new EmptyIndexer<int>()
+                    : (uint)_count >= (uint)count ? new EmptyIndexer<int>()
                     : new RangeOffsetIndexer(_count, count - _count);
 
             public IReadOnlyList<int> SkipLast(int _count) =>
                 _count <= 0 ? this
-                    : _count >= count ? new EmptyIndexer<int>()
+                    : (uint)_count >= (uint)count ? new EmptyIndexer<int>()
                     : new RangeIndexer(count - _count);
 
             public IReadOnlyList<int> Take(int _count) =>
                 _count <= 0 ? new EmptyIndexer<int>()
-                    : _count >= count ? this
+                    : (uint)_count >= (uint)count ? this
                     : new RangeIndexer(_count);
 
             public IReadOnlyList<int> TakeLast(int _count) =>
                 _count <= 0 ? new EmptyIndexer<int>()
-                    : _count >= count ? this
+                    : (uint)_count >= (uint)count ? this
                     : new RangeOffsetIndexer(count - _count, _count);
 
             public override bool Contains(int item) => item >= 0 && item < count;
@@ -135,7 +135,7 @@ namespace Indexer.Linq
                     {
                         return true;
                     }
-                    else if (_index < count)
+                    else if ((uint)_index < (uint)count)
                     {
                         current++;
                         return true;
@@ -157,7 +157,7 @@ namespace Indexer.Linq
         private sealed partial class RangeOffsetIndexer(int offset, int count) : RangeOffsetIndexerBase<int>(offset, count), ISelectWithIndex<int>, ISkipBoth<int>, ITake<int>, ITakeLast<int>
         {
             public override int this[int index] =>
-                index >= 0 && index < count
+                index >= 0 && (uint)index < (uint)count
                     ? offset + index
                     : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
 
@@ -169,22 +169,22 @@ namespace Indexer.Linq
 
             public IReadOnlyList<int> Skip(int _count) =>
                 _count <= 0 ? this
-                    : _count >= count ? new EmptyIndexer<int>()
+                    : (uint)_count >= (uint)count ? new EmptyIndexer<int>()
                     : new RangeOffsetIndexer(offset + _count, count - _count);
 
             public IReadOnlyList<int> SkipLast(int _count) =>
                 _count <= 0 ? this
-                    : _count >= count ? new EmptyIndexer<int>()
+                    : (uint)_count >= (uint)count ? new EmptyIndexer<int>()
                     : new RangeOffsetIndexer(offset, count - _count);
 
             public IReadOnlyList<int> Take(int _count) =>
                 _count <= 0 ? new EmptyIndexer<int>()
-                    : _count >= count ? this
+                    : (uint)_count >= (uint)count ? this
                     : new RangeOffsetIndexer(offset, _count);
 
             public IReadOnlyList<int> TakeLast(int _count) =>
                 _count <= 0 ? new EmptyIndexer<int>()
-                    : _count >= count ? this
+                    : (uint)_count >= (uint)count ? this
                     : new RangeOffsetIndexer(offset + (count - _count), _count);
 
             public override bool Contains(int item) => item >= offset && item < offset + count;

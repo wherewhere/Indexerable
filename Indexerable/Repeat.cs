@@ -28,17 +28,21 @@ namespace Indexer.Linq
         /// An iterator that yields the same item multiple times.
         /// </summary>
         /// <typeparam name="TResult">The type of the item.</typeparam>
-        private sealed partial class RepeatIndexer<TResult>(TResult element, int count) : Indexer<TResult>, ISkipBoth<TResult>, ITake<TResult>, ITakeLast<TResult>
+        private sealed partial class RepeatIndexer<TResult>(TResult element, int count) : RangeIndexerBase<TResult>(count), ISkipBoth<TResult>, ITake<TResult>, ITakeLast<TResult>
         {
-            public override TResult this[int index] => index >= 0 && index < count ? element : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
-            public override int Count => count;
-            public IReadOnlyList<TResult> Skip(int _count) => _count <= 0 ? this : _count >= count ? new EmptyIndexer<TResult>() : new RepeatIndexer<TResult>(element, count - _count);
+            public override TResult this[int index] => index >= 0 && (uint)index < (uint)count ? element : throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
+            public IReadOnlyList<TResult> Skip(int _count) => _count <= 0 ? this : (uint)_count >= (uint)count ? new EmptyIndexer<TResult>() : new RepeatIndexer<TResult>(element, count - _count);
             public IReadOnlyList<TResult> SkipLast(int _count) => Skip(_count);
             public IReadOnlyList<TResult> Take(int _count) => _count <= 0 ? new EmptyIndexer<TResult>() : new RepeatIndexer<TResult>(element, Math.Min(_count, count));
             public IReadOnlyList<TResult> TakeLast(int _count) => Take(_count);
             public override bool Contains(TResult item) => EqualityComparer<TResult>.Default.Equals(element, item);
             public override int IndexOf(TResult item) => EqualityComparer<TResult>.Default.Equals(element, item) ? 0 : -1;
             public override void CopyTo(TResult[] array, int arrayIndex) => Array.Fill(array, element, arrayIndex, count);
+            public override IEnumerator<TResult> GetEnumerator() => new IndexerEnumerator(element, count);
+            private sealed class IndexerEnumerator(TResult element, int count) : RangeIndexerEnumerator(count)
+            {
+                public override TResult Current => element;
+            }
         }
     }
 }
