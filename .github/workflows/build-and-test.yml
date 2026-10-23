@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOTNET_VERSION: 10.0.x # The .NET SDK version to use
+  DOTNET_VERSION: 11.0.x # The .NET SDK version to use
 
 jobs:
   build-and-test:
@@ -27,15 +27,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET Core App 8.0
-        uses: actions/setup-dotnet@v5
+      - name: Setup .NET Core App LTS
+        uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: Setup .NET Core App ${{env.DOTNET_VERSION}}
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{env.DOTNET_VERSION}}
+          dotnet-quality: preview
 
       - name: Install Dependencies
         run: dotnet restore -p:FullTargets=false

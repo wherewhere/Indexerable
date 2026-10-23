@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Indexer.Linq.Tests
 {
-    public class AsEnumerableTests
+    public class AsIndexerableTests
     {
         [Fact]
         public void SameResultsRepeatCallsIntQuery()

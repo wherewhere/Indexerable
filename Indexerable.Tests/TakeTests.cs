@@ -36,6 +36,18 @@ namespace Indexer.Linq.Tests
         }
 
         [Fact]
+        public void SameResultsArrayRange()
+        {
+            int[] q = [9999, 0, 888, -1, 66, -777, 1, 2, -12345];
+            IReadOnlyList<int> s = q;
+
+            Assert.Equal(q[0..9], s[0..9]);
+            Assert.Equal(q[^9..9], s[^9..9]);
+            Assert.Equal(q[0..^0], s[0..^0]);
+            Assert.Equal(q[^9..^0], s[^9..^0]);
+        }
+
+        [Fact]
         public void SourceEmptyCountPositive()
         {
             foreach (IReadOnlyList<int> source in CreateSources<int>([]))
