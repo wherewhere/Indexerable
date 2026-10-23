@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "**.cs"
-      - "**.csproj"
+      - .github/workflows/build-and-test.yml
+      - Indexerable**
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -47,4 +47,6 @@ jobs:
         run: dotnet build --no-restore -p:FullTargets=false
 
       - name: Test
-        run: dotnet test --no-restore --blame-hang-timeout 1m -p:FullTargets=false
+        run: dotnet test --no-restore --timeout 1m -p:FullTargets=false
+        env:
+          DOTNET_TEST_RUNNER: Microsoft.Testing.Platform
