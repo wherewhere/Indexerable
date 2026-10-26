@@ -19,10 +19,11 @@ namespace Indexer.Linq
             public sealed override bool Contains(TSource item)
             {
                 int count = GetCount(out int offset);
+                EqualityComparer<TSource> equalityComparer = EqualityComparer<TSource>.Default;
                 for (int i = 0; i < count; i++)
                 {
                     TSource j = source[offset + i];
-                    if (EqualityComparer<TSource>.Default.Equals(j, item))
+                    if (equalityComparer.Equals(j, item))
                     {
                         return true;
                     }
@@ -33,10 +34,11 @@ namespace Indexer.Linq
             public sealed override int IndexOf(TSource item)
             {
                 int count = GetCount(out int offset);
+                EqualityComparer<TSource> equalityComparer = EqualityComparer<TSource>.Default;
                 for (int i = 0; i < count; i++)
                 {
                     TSource j = source[offset + i];
-                    if (EqualityComparer<TSource>.Default.Equals(j, item))
+                    if (equalityComparer.Equals(j, item))
                     {
                         return i;
                     }
@@ -89,10 +91,11 @@ namespace Indexer.Linq
             public sealed override bool Contains(TSource item)
             {
                 int count = Count;
+                EqualityComparer<TSource> equalityComparer = EqualityComparer<TSource>.Default;
                 for (int i = 0; i < count; i++)
                 {
                     TSource j = source[i];
-                    if (EqualityComparer<TSource>.Default.Equals(j, item))
+                    if (equalityComparer.Equals(j, item))
                     {
                         return true;
                     }
@@ -103,10 +106,11 @@ namespace Indexer.Linq
             public sealed override int IndexOf(TSource item)
             {
                 int count = Count;
+                EqualityComparer<TSource> equalityComparer = EqualityComparer<TSource>.Default;
                 for (int i = 0; i < count; i++)
                 {
                     TSource j = source[i];
-                    if (EqualityComparer<TSource>.Default.Equals(j, item))
+                    if (equalityComparer.Equals(j, item))
                     {
                         return i;
                     }

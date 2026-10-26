@@ -106,9 +106,10 @@ namespace Indexer.Linq
         {
             public override bool Contains(T item)
             {
+                EqualityComparer<T> equalityComparer = EqualityComparer<T>.Default;
                 foreach (T element in this)
                 {
-                    if (EqualityComparer<T>.Default.Equals(element, item))
+                    if (equalityComparer.Equals(element, item))
                     {
                         return true;
                     }
@@ -119,9 +120,10 @@ namespace Indexer.Linq
             public override int IndexOf(T item)
             {
                 int count = Count;
+                EqualityComparer<T> equalityComparer = EqualityComparer<T>.Default;
                 for (int i = 0; i < count; i++)
                 {
-                    if (EqualityComparer<T>.Default.Equals(this[i], item))
+                    if (equalityComparer.Equals(this[i], item))
                     {
                         return i;
                     }

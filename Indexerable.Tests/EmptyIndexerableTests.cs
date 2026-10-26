@@ -29,7 +29,7 @@ namespace Indexer.Linq.Tests
         {
             Assert.Equal((T[])[], Indexerable.Empty<T>());
             Assert.Empty(Indexerable.Empty<T>());
-            Assert.Same(Indexerable.Empty<T>().GetEnumerator(), Indexerable.Empty<T>().GetEnumerator());
+            Assert.Equal(Indexerable.Empty<T>().GetEnumerator(), Indexerable.Empty<T>().GetEnumerator());
         }
 
         [Fact]

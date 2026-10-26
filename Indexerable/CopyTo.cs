@@ -22,16 +22,17 @@ namespace Indexer.Linq
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             if (array is null) { ThrowHelper.ThrowArgumentNullException(nameof(array)); }
-            if (source is ICollection<TSource> collection)
+            switch (source)
             {
-                collection.CopyTo(array, arrayIndex);
-            }
-            else
-            {
-                for (int i = 0; i < source.Count; i++)
-                {
-                    array[arrayIndex + i] = source[i];
-                }
+                case ICollection<TSource> collection:
+                    collection.CopyTo(array, arrayIndex);
+                    break;
+                default:
+                    for (int i = 0; i < source.Count; i++)
+                    {
+                        array[arrayIndex + i] = source[i];
+                    }
+                    break;
             }
         }
     }

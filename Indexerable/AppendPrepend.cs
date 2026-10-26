@@ -607,14 +607,14 @@ namespace Indexer.Linq
             public override int IndexOf(T item) => EqualityComparer<T>.Default.Equals(element, item) ? 0 : -1;
             public override void CopyTo(T[] array, int arrayIndex) => array[arrayIndex] = element;
             public sealed override IEnumerator<T> GetEnumerator() => new IndexerEnumerator(element);
-            private sealed class IndexerEnumerator(T element) : IEnumerator<T>
+            private partial struct IndexerEnumerator(T element) : IEnumerator<T>
             {
                 private bool _moveNextCalled;
-                public T Current => element;
+                public readonly T Current => element;
                 public bool MoveNext() => !_moveNextCalled && (_moveNextCalled = true);
                 public void Reset() => _moveNextCalled = false;
-                object? IEnumerator.Current => Current;
-                void IDisposable.Dispose() { }
+                readonly object? IEnumerator.Current => Current;
+                readonly void IDisposable.Dispose() { }
             }
         }
 

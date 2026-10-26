@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
+#if NETCOREAPP || NETCORE5_0
+using System.Collections.Immutable;
+#endif
+
 namespace Indexer.Linq
 {
     public static partial class Indexerable
@@ -15,20 +19,27 @@ namespace Indexer.Linq
         /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
         public static int IndexOf<TSource>(this IReadOnlyList<TSource> source, TSource value)
         {
-            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
-            else if (source is List<TSource> list)
+            switch (source)
             {
-                return list.IndexOf(value);
-            }
-            else
-            {
-                for (int i = 0; i < source.Count; i++)
-                {
-                    if (EqualityComparer<TSource>.Default.Equals(source[i], value))
+                case null:
+                    ThrowHelper.ThrowArgumentNullException(nameof(source));
+                    break;
+                case IList<TSource> list:
+                    return list.IndexOf(value);
+#if NETCOREAPP || NETCORE5_0
+                case IImmutableList<TSource> immutableList:
+                    return immutableList.IndexOf(item: value);
+#endif
+                default:
+                    EqualityComparer<TSource> equalityComparer = EqualityComparer<TSource>.Default;
+                    for (int i = 0; i < source.Count; i++)
                     {
-                        return i;
+                        if (equalityComparer.Equals(source[i], value))
+                        {
+                            return i;
+                        }
                     }
-                }
+                    break;
             }
             return -1;
         }
@@ -41,19 +52,19 @@ namespace Indexer.Linq
         /// <param name="predicate">A function that determines whether an element matches the search criteria.</param>
         /// <returns>The zero-based index of the first element that matches <paramref name="predicate"/>, if found; otherwise, -1.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="source"/> or <paramref name="predicate"/> is <see langword="null"/>.</exception>
-        public static int IndexOf<TSource>(this IReadOnlyList<TSource> source, Func<TSource, bool> predicate)
+        public static int IndexOf<TSource>(this IReadOnlyList<TSource> source, Predicate<TSource> predicate)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             if (predicate is null) { ThrowHelper.ThrowArgumentNullException(nameof(predicate)); }
             switch (source)
             {
                 case List<TSource> list:
-                    return list.FindIndex(predicate.Invoke);
+                    return list.FindIndex(predicate);
                 case TSource[] array:
-                    return Array.FindIndex(array, predicate.Invoke);
+                    return Array.FindIndex(array, predicate);
 #if NETCOREAPP || NETCORE5_0
-                case System.Collections.Immutable.ImmutableList<TSource> immutableList:
-                    return immutableList.FindIndex(predicate.Invoke);
+                case ImmutableList<TSource> immutableList:
+                    return immutableList.FindIndex(predicate);
 #endif
                 default:
                     for (int i = 0; i < source.Count; i++)
