@@ -6,7 +6,7 @@ namespace Indexer.Linq
 {
     public static partial class Indexerable
     {
-        private abstract partial class IndexerBase<T> : IList, IReadOnlyList<T>, IList<T>
+        private closed partial class IndexerBase<T> : IList, IReadOnlyList<T>, IList<T>
         {
             public abstract T this[int index] { get; }
             public abstract int Count { get; }
@@ -74,7 +74,7 @@ namespace Indexer.Linq
 
             #endregion
 
-            protected abstract partial class IndexerEnumeratorBase : IEnumerator<T>
+            protected closed partial class IndexerEnumeratorBase : IEnumerator<T>
             {
                 protected int _index = -1;
                 public abstract T Current { get; }
@@ -84,7 +84,7 @@ namespace Indexer.Linq
                 public virtual void Dispose() { }
             }
 
-            protected abstract partial class EnumeratorIndexerEnumeratorBase : IndexerEnumeratorBase, IDisposable
+            protected closed partial class EnumeratorIndexerEnumeratorBase : IndexerEnumeratorBase, IDisposable
             {
                 protected IEnumerator<T>? _enumerator = null;
                 protected T _current = default!;

@@ -27,7 +27,7 @@ namespace Indexer.Linq
             IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second);
         }
 
-        private abstract partial class ConcatIndexerBase<TSource> : IndexerBase<TSource>
+        private closed partial class ConcatIndexerBase<TSource> : IndexerBase<TSource>
         {
             protected sealed partial class IndexerEnumerator(IReadOnlyList<TSource> source, IReadOnlyList<TSource> second) : EnumeratorIndexerEnumeratorBase
             {

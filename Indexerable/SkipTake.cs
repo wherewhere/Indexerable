@@ -5,7 +5,7 @@ namespace Indexer.Linq
 {
     public static partial class Indexerable
     {
-        private abstract partial class SkipIndexerBase<TSource>(IReadOnlyList<TSource> source) : IndexerBase<TSource>
+        private closed partial class SkipIndexerBase<TSource>(IReadOnlyList<TSource> source) : IndexerBase<TSource>
         {
             protected readonly IReadOnlyList<TSource> source = source;
 
@@ -79,7 +79,7 @@ namespace Indexer.Linq
             }
         }
 
-        private abstract partial class TakeIndexerBase<TSource>(IReadOnlyList<TSource> source) : IndexerBase<TSource>
+        private closed partial class TakeIndexerBase<TSource>(IReadOnlyList<TSource> source) : IndexerBase<TSource>
         {
             protected readonly IReadOnlyList<TSource> source = source;
 

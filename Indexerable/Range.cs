@@ -31,11 +31,11 @@ namespace Indexer.Linq
             };
         }
 
-        private abstract partial class RangeIndexerBase<TSource>(int count) : IndexerBase<TSource>
+        private closed partial class RangeIndexerBase<TSource>(int count) : IndexerBase<TSource>
         {
             protected readonly int count = count;
             public sealed override int Count => count;
-            protected abstract partial class RangeIndexerEnumerator(int count) : IndexerEnumeratorBase
+            protected closed partial class RangeIndexerEnumerator(int count) : IndexerEnumeratorBase
             {
                 public sealed override bool MoveNext()
                 {
@@ -120,11 +120,11 @@ namespace Indexer.Linq
         }
 #endif
 
-        private abstract partial class RangeOffsetIndexerBase<TSource>(int offset, int count) : RangeIndexerBase<TSource>(count)
+        private closed partial class RangeOffsetIndexerBase<TSource>(int offset, int count) : RangeIndexerBase<TSource>(count)
         {
             protected readonly int offset = offset;
 
-            protected abstract partial class RangeOffsetIndexerEnumerator(int offset, int count) : IndexerEnumeratorBase
+            protected closed partial class RangeOffsetIndexerEnumerator(int offset, int count) : IndexerEnumeratorBase
             {
                 private readonly int offset = offset;
                 protected int current = offset;
