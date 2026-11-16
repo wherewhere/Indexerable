@@ -65,11 +65,12 @@ All extension methods operate on `IReadOnlyList<T>` unless noted.
 | Create sequences | `Create`, `Range`, `Repeat`, `Empty`, `InfiniteSequence` |
 | Adapt lists | `AsReadOnlyList`, `ToReadOnlyList`, `Cast` |
 | Transform and combine | `Select`, `Append`, `Prepend`, `Concat`, `Zip`, `Reverse`, `Index` |
-| Select a portion | `Skip`, `SkipLast`, `Take`, `TakeLast` |
+| Select elements | `First`, `FirstOrDefault`, `Last`, `LastOrDefault` |
+| Select a portion | `Skip`, `SkipLast`, `Take`, `Take(Range)`, `TakeLast` |
 | Search | `IndexOf(value)`, `IndexOf(predicate)` |
 | Copy elements | `CopyTo` |
 
-`ToReadOnlyList` also has an overload for `string`, which exposes its characters as a read-only list. `InfiniteSequence<T>` is available on .NET 7 and later targets.
+`ToReadOnlyList` also has an overload for `string`, which exposes its characters as a read-only list. `Take(Range)` and range indexer syntax (`source[range]`) are available on .NET Standard 2.1 and compatible targets. `InfiniteSequence<T>` is available on .NET 7 and later targets.
 
 Use `Create` to generate a fixed-size list from each element's zero-based index:
 

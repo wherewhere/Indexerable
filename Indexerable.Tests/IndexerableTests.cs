@@ -7,6 +7,8 @@ namespace Indexer.Linq.Tests;
 
 public abstract class IndexerableTests
 {
+    protected static Func<int, bool> IsEven => x => x % 2 == 0;
+
     protected class TestReadOnlyList<T>(T[] items) : IReadOnlyList<T>
     {
         public T[] Items = items;

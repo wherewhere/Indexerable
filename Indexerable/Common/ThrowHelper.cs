@@ -10,6 +10,10 @@ namespace Indexer.Linq
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException(string name) => throw new ArgumentOutOfRangeException(name);
         [DoesNotReturn]
+        internal static void ThrowNoElementsException() => throw new InvalidOperationException("Sequence contains no elements.");
+        [DoesNotReturn]
+        internal static void ThrowNoMatchException() => throw new InvalidOperationException("Sequence contains no matching element.");
+        [DoesNotReturn]
         internal static void ThrowArgumentException_LongerThanDestArray(string name) => throw new ArgumentException("Destination array was not long enough. Check the destination index, length, and the array's lower bounds.", name);
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRange_IndexMustBeLess(string name) => throw new ArgumentOutOfRangeException(name, "Index was out of range. Must be non-negative and less than the size of the collection.");
