@@ -13,6 +13,7 @@ namespace Indexer.Linq
         /// <returns>The first element in <paramref name="source"/>.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
         /// <exception cref="InvalidOperationException"><paramref name="source"/> is empty.</exception>
+        [Obsolete("Use source[0] index instead of Indexerable.First(source) method.")]
         public static TSource First<TSource>(this IReadOnlyList<TSource> source)
         {
             TSource? first = source.TryGetFirst(out bool found);

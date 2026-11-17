@@ -10,6 +10,8 @@ namespace Indexer.Linq
         [DoesNotReturn]
         internal static void ThrowArgumentOutOfRangeException(string name) => throw new ArgumentOutOfRangeException(name);
         [DoesNotReturn]
+        internal static void ThrowMoreThanOneElementException() => throw new InvalidOperationException("Sequence contains more than one element.");
+        [DoesNotReturn]
         internal static void ThrowNoElementsException() => throw new InvalidOperationException("Sequence contains no elements.");
         [DoesNotReturn]
         internal static void ThrowNoMatchException() => throw new InvalidOperationException("Sequence contains no matching element.");

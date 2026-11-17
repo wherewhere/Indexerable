@@ -28,7 +28,7 @@ namespace Indexer.Linq.Tests
         [Fact]
         public void SkipAllExactly()
         {
-            Assert.False(Indexerable.Range(0, 20).Skip(20).Any());
+            Assert.False(Indexerable.Range(0, 20).Skip(20).Count > 0);
         }
 
         [Fact]

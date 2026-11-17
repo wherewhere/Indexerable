@@ -65,12 +65,13 @@ All extension methods operate on `IReadOnlyList<T>` unless noted.
 | Create sequences | `Create`, `Range`, `Repeat`, `Empty`, `InfiniteSequence` |
 | Adapt lists | `AsReadOnlyList`, `ToReadOnlyList`, `Cast` |
 | Transform and combine | `Select`, `Append`, `Prepend`, `Concat`, `Zip`, `Reverse`, `Index` |
-| Select elements | `First`, `FirstOrDefault`, `Last`, `LastOrDefault` |
+| Check and count | `Any` (obsolete), `Count` (obsolete) |
+| Select elements | `ElementAt` (obsolete), `ElementAtOrDefault`, `First` (obsolete), `FirstOrDefault`, `Last` (no predicate; obsolete), `LastOrDefault`, `Single`, `SingleOrDefault` |
 | Select a portion | `Skip`, `SkipLast`, `Take`, `Take(Range)`, `TakeLast` |
 | Search | `IndexOf(value)`, `IndexOf(predicate)` |
 | Copy elements | `CopyTo` |
 
-`ToReadOnlyList` also has an overload for `string`, which exposes its characters as a read-only list. `Take(Range)` and range indexer syntax (`source[range]`) are available on .NET Standard 2.1 and compatible targets. `InfiniteSequence<T>` is available on .NET 7 and later targets.
+Methods marked obsolete are retained for compatibility; prefer the replacement indicated by each method's obsolete message. `ToReadOnlyList` also has an overload for `string`, which exposes its characters as a read-only list. `ElementAt(Index)`, `Take(Range)`, and range indexer syntax (`source[range]`) are available on .NET Standard 2.1 and compatible targets. `InfiniteSequence<T>` is available on .NET 7 and later targets.
 
 Use `Create` to generate a fixed-size list from each element's zero-based index:
 

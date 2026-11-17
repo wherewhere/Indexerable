@@ -23,7 +23,8 @@ namespace Indexer.Linq.Tests
         [Fact]
         public void SelectProperty()
         {
-            var source = new[]{
+            var source = new[]
+            {
                 new { name="Prakash", custID=98088 },
                 new { name="Bob", custID=29099 },
                 new { name="Chris", custID=39033 },
@@ -55,7 +56,8 @@ namespace Indexer.Linq.Tests
         [Fact]
         public void SelectPropertyPassingIndex()
         {
-            var source = new[]{
+            var source = new[]
+            {
                 new { name="Prakash", custID=98088 },
                 new { name="Bob", custID=29099 },
                 new { name="Chris", custID=39033 },
@@ -69,7 +71,8 @@ namespace Indexer.Linq.Tests
         [Fact]
         public void SelectPropertyUsingIndex()
         {
-            var source = new[]{
+            var source = new[]
+            {
                 new { name="Prakash", custID=98088 },
                 new { name="Bob", custID=29099 },
                 new { name="Chris", custID=39033 }
@@ -81,7 +84,8 @@ namespace Indexer.Linq.Tests
         [Fact]
         public void SelectPropertyPassingIndexOnLast()
         {
-            var source = new[]{
+            var source = new[]
+            {
                 new { name="Prakash", custID=98088},
                 new { name="Bob", custID=29099 },
                 new { name="Chris", custID=39033 },

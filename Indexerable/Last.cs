@@ -13,6 +13,7 @@ namespace Indexer.Linq
         /// <returns>The last element in <paramref name="source"/>.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
         /// <exception cref="InvalidOperationException"><paramref name="source"/> is empty.</exception>
+        [Obsolete("Use source[^1] index instead of Indexerable.Last(source) method.")]
         public static TSource Last<TSource>(this IReadOnlyList<TSource> source)
         {
             TSource? last = source.TryGetLast(out bool found);
