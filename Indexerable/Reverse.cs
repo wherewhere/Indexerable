@@ -23,7 +23,7 @@ namespace Indexer.Linq
         public static IReadOnlyList<TSource> Reverse<TSource>(this TSource[] source)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
-            return source.Length == 0 ? source : new ReverseIndexer<TSource>(source);
+            return source.Length <= 0 ? source : new ReverseIndexer<TSource>(source);
         }
 
         /// <summary>
