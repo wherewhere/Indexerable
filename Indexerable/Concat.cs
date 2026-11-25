@@ -18,7 +18,9 @@ namespace Indexer.Linq
         {
             if (first is null) { ThrowHelper.ThrowArgumentNullException(nameof(first)); }
             if (second is null) { ThrowHelper.ThrowArgumentNullException(nameof(second)); }
-            return new ConcatIndexer<TSource>(first, second);
+            return first.IsEmptyArray() ? second
+                : second.IsEmptyArray() ? first
+                : new ConcatIndexer<TSource>(first, second);
         }
 
         private interface IConcat<TSource> : IReadOnlyList<TSource>
@@ -88,7 +90,9 @@ namespace Indexer.Linq
 
             public override int Count => first.Count + second.Count;
 
-            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> _second) => new ConcatNIndexer<TSource>(first, second, _second);
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> _second) =>
+                _second.IsEmptyArray() ? this
+                    : new ConcatNIndexer<TSource>(first, second, _second);
 
             public override bool Contains(TSource item) => first.Contains(item) || second.Contains(item);
 
@@ -150,7 +154,9 @@ namespace Indexer.Linq
                 }
             }
 
-            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> _second) => new ConcatNIndexer<TSource>(first, [.. rest, _second]);
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> _second) =>
+                _second.IsEmptyArray() ? this
+                    : new ConcatNIndexer<TSource>(first, [.. rest, _second]);
 
             public override bool Contains(TSource item) => first.Contains(item) || rest.Any(x => x.Contains(item));
 

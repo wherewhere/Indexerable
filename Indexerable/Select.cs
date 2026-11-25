@@ -19,8 +19,9 @@ namespace Indexer.Linq
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             if (selector is null) { ThrowHelper.ThrowArgumentNullException(nameof(selector)); }
-            return source is ISelect<TSource> select
-                ? select.Select(selector) : new IReadOnlyListSelectIndexer<TSource, TResult>(source, selector);
+            return source.IsEmptyArray() ? new EmptyIndexer<TResult>()
+                : source is ISelect<TSource> select ? select.Select(selector)
+                : new IReadOnlyListSelectIndexer<TSource, TResult>(source, selector);
         }
 
         private interface ISelect<out TSource> : IReadOnlyList<TSource>
@@ -56,8 +57,9 @@ namespace Indexer.Linq
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             if (selector is null) { ThrowHelper.ThrowArgumentNullException(nameof(selector)); }
-            return source is ISelectWithIndex<TSource> select
-                ? select.Select(selector) : new IReadOnlyListSelectWithIndexIndexer<TSource, TResult>(source, selector);
+            return source.IsEmptyArray() ? new EmptyIndexer<TResult>()
+                : source is ISelectWithIndex<TSource> select ? select.Select(selector)
+                : new IReadOnlyListSelectWithIndexIndexer<TSource, TResult>(source, selector);
         }
 
         private interface ISelectWithIndex<out TSource> : ISelect<TSource>

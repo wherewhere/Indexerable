@@ -16,7 +16,7 @@ namespace Indexer.Linq
         public static IReadOnlyList<(int Index, TSource Item)> Index<TSource>(this IReadOnlyList<TSource> source)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
-            return new IndexIndexer<TSource>(source);
+            return source.IsEmptyArray() ? new EmptyIndexer<(int, TSource)>() : new IndexIndexer<TSource>(source);
         }
 
         private sealed partial class IndexIndexer<TSource>(IReadOnlyList<TSource> source) : Indexer<(int Index, TSource Item)>

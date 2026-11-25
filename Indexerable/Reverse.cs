@@ -12,11 +12,18 @@ namespace Indexer.Linq
         /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
         /// <param name="source">The list whose elements should be returned in reverse order.</param>
         /// <returns>A read-only list whose elements correspond to those of <paramref name="source"/> in reverse order.</returns>
-        /// <exception cref="System.ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
         public static IReadOnlyList<TSource> Reverse<TSource>(this IReadOnlyList<TSource> source)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
-            return new ReverseIndexer<TSource>(source);
+            return source.IsEmptyArray() ? source : new ReverseIndexer<TSource>(source);
+        }
+
+        /// <inheritdoc cref="Reverse{TSource}(IReadOnlyList{TSource})"/>
+        public static IReadOnlyList<TSource> Reverse<TSource>(this TSource[] source)
+        {
+            if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
+            return source.Length == 0 ? source : new ReverseIndexer<TSource>(source);
         }
 
         /// <summary>

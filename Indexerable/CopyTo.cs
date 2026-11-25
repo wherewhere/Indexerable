@@ -18,7 +18,7 @@ namespace Indexer.Linq
         /// <exception cref="ArgumentException">The number of elements in <paramref name="source"/> is greater than the available space from
         /// <paramref name="arrayIndex"/> to the end of <paramref name="array"/>.
         /// </exception>
-        public static void CopyTo<TSource>(this IReadOnlyList<TSource> source, TSource[] array, int arrayIndex)
+        public static void CopyTo<TSource>(this IReadOnlyList<TSource> source, TSource[] array, int arrayIndex = 0)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             if (array is null) { ThrowHelper.ThrowArgumentNullException(nameof(array)); }

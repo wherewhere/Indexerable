@@ -1,10 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Indexer.Linq
 {
     public static partial class Indexerable
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsArrayLessThanOrEqual<TSource>(this IReadOnlyList<TSource> source, int count) => count switch
+        {
+            <= 0 => source.IsEmptyArray(),
+            1 => source is TSource[] { Length: <= 1 }
+                        or EmptyIndexer<TSource>
+                        or SingleElementIndexer<TSource>,
+            _ => source switch
+            {
+                TSource[] array => array.Length <= count,
+                EmptyIndexer<TSource>
+                or SingleElementIndexer<TSource> => true,
+                _ => false
+            },
+        };
+
         /// <summary>
         /// Bypasses a specified number of elements in a read-only list and returns the remaining elements.
         /// </summary>
@@ -18,6 +35,7 @@ namespace Indexer.Linq
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return count <= 0 ? source
+                : source.IsArrayLessThanOrEqual(count) ? new EmptyIndexer<TSource>()
                 : source is ISkip<TSource> skip ? skip.Skip(count)
                 : new SkipIndexer<TSource>(source, count);
         }
@@ -53,6 +71,7 @@ namespace Indexer.Linq
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return count <= 0 ? source
+                : source.IsArrayLessThanOrEqual(count) ? new EmptyIndexer<TSource>()
                 : source is ISkipLast<TSource> skip ? skip.SkipLast(count)
                 : new SkipLastIndexer<TSource>(source, count);
         }

@@ -13,13 +13,18 @@ namespace Indexer.Linq
         /// <typeparam name="TResult">The type to cast the elements of <paramref name="source"/> to.</typeparam>
         /// <param name="source">The non-generic list whose elements are cast.</param>
         /// <returns>A read-only list that contains each element of <paramref name="source"/> cast to <typeparamref name="TResult"/>.</returns>
-        /// <exception cref="System.ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
-        /// <exception cref="System.InvalidCastException">An element cannot be cast to <typeparamref name="TResult"/>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="source"/> is <see langword="null"/>.</exception>
+        /// <exception cref="InvalidCastException">An element cannot be cast to <typeparamref name="TResult"/>.</exception>
         public static IReadOnlyList<TResult> Cast<TResult>(this IList source)
         {
             if (source is IReadOnlyList<TResult> typedSource) { return typedSource; }
             else if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
-            return source is Array { Rank: > 1 } array ? new ArrayCastIndexer<TResult>(array) : new CastIndexer<TResult>(source);
+            return source switch
+            {
+                Array { Length: 0 } => new EmptyIndexer<TResult>(),
+                Array { Rank: > 1 } array => new ArrayCastIndexer<TResult>(array),
+                _ => new CastIndexer<TResult>(source)
+            };
         }
 
         private sealed partial class CastIndexer<TResult>(IList source) : Indexer<TResult>
@@ -41,7 +46,7 @@ namespace Indexer.Linq
         {
             if (source is IReadOnlyList<TResult> typedSource) { return typedSource; }
             else if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
-            return new CastIndexer<TSource, TResult>(source);
+            return source.IsEmptyArray() ? new EmptyIndexer<TResult>() : new CastIndexer<TSource, TResult>(source);
         }
 
         private sealed partial class CastIndexer<TSource, TResult>(IReadOnlyList<TSource> source) : Indexer<TResult>

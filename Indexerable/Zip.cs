@@ -21,7 +21,8 @@ namespace Indexer.Linq
             if (first is null) { ThrowHelper.ThrowArgumentNullException(nameof(first)); }
             if (second is null) { ThrowHelper.ThrowArgumentNullException(nameof(second)); }
             if (resultSelector is null) { ThrowHelper.ThrowArgumentNullException(nameof(resultSelector)); }
-            return new ZipIndexer<TFirst, TSecond, TResult>(first, second, resultSelector);
+            return first.IsEmptyArray() || second.IsEmptyArray() ? new EmptyIndexer<TResult>()
+                : new ZipIndexer<TFirst, TSecond, TResult>(first, second, resultSelector);
         }
 
         private sealed partial class ZipIndexer<TFirst, TSecond, TResult>(IReadOnlyList<TFirst> first, IReadOnlyList<TSecond> second, Func<TFirst, TSecond, TResult> resultSelector) : Indexer<TResult>
@@ -44,7 +45,8 @@ namespace Indexer.Linq
         {
             if (first is null) { ThrowHelper.ThrowArgumentNullException(nameof(first)); }
             if (second is null) { ThrowHelper.ThrowArgumentNullException(nameof(second)); }
-            return new ZipToTupleIndexer<TFirst, TSecond>(first, second);
+            return first.IsEmptyArray() || second.IsEmptyArray() ? new EmptyIndexer<(TFirst First, TSecond Second)>()
+                : new ZipToTupleIndexer<TFirst, TSecond>(first, second);
         }
 
         private sealed partial class ZipToTupleIndexer<TFirst, TSecond>(IReadOnlyList<TFirst> first, IReadOnlyList<TSecond> second) : Indexer<(TFirst First, TSecond Second)>
@@ -69,7 +71,9 @@ namespace Indexer.Linq
             if (first is null) { ThrowHelper.ThrowArgumentNullException(nameof(first)); }
             if (second is null) { ThrowHelper.ThrowArgumentNullException(nameof(second)); }
             if (third is null) { ThrowHelper.ThrowArgumentNullException(nameof(third)); }
-            return new ZipToTupleIndexer<TFirst, TSecond, TThird>(first, second, third);
+            return first.IsEmptyArray() || second.IsEmptyArray() || third.IsEmptyArray()
+                ? new EmptyIndexer<(TFirst First, TSecond Second, TThird Third)>()
+                : new ZipToTupleIndexer<TFirst, TSecond, TThird>(first, second, third);
         }
 
         private sealed partial class ZipToTupleIndexer<TFirst, TSecond, TThird>(IReadOnlyList<TFirst> first, IReadOnlyList<TSecond> second, IReadOnlyList<TThird> third) : Indexer<(TFirst First, TSecond Second, TThird Third)>

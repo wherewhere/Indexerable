@@ -18,6 +18,7 @@ namespace Indexer.Linq
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return count <= 0 ? new EmptyIndexer<TSource>()
+                : source.IsArrayLessThanOrEqual(count) ? source
                 : source is ITake<TSource> take ? take.Take(count)
                 : new TakeIndexer<TSource>(source, count);
         }
@@ -47,7 +48,9 @@ namespace Indexer.Linq
         public static IReadOnlyList<TSource> Take<TSource>(this IReadOnlyList<TSource> source, Range range)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
-            return source is ITakeRange<TSource> take ? take.Take(range) : new TakeRangeIndexer<TSource>(source, range);
+            return source.IsEmptyArray() ? source
+                : source is ITakeRange<TSource> take ? take.Take(range)
+                : new TakeRangeIndexer<TSource>(source, range);
         }
 
         private interface ITakeRange<out TSource> : IReadOnlyList<TSource>
@@ -97,6 +100,7 @@ namespace Indexer.Linq
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
             return count <= 0 ? new EmptyIndexer<TSource>()
+                : source.IsArrayLessThanOrEqual(count) ? source
                 : source is ITakeLast<TSource> take ? take.TakeLast(count)
                 : new TakeLastIndexer<TSource>(source, count);
         }

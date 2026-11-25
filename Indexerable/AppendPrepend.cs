@@ -18,8 +18,9 @@ namespace Indexer.Linq
         public static IReadOnlyList<TSource> Append<TSource>(this IReadOnlyList<TSource> source, TSource element)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
-            return source is IAppend<TSource> append
-                ? append.Append(element) : new AppendIndexer<TSource>(source, element);
+            return source.IsEmptyArray() ? new SingleElementIndexer<TSource>(element)
+                : source is IAppend<TSource> append ? append.Append(element)
+                : new AppendIndexer<TSource>(source, element);
         }
 
         private interface IAppend<TSource> : IReadOnlyList<TSource>
@@ -53,7 +54,9 @@ namespace Indexer.Linq
                     : count == 1 ? new SingleElementIndexer<TSource>(element)
                     : new TakeLastIndexer<TSource>(this, count);
 
-            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>(source, new SingleElementIndexer<TSource>(element), second);
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) =>
+                second.IsEmptyArray() ? this
+                    : new ConcatNIndexer<TSource>(source, new SingleElementIndexer<TSource>(element), second);
 
             public override bool Contains(TSource item) => source.Contains(item) || EqualityComparer<TSource>.Default.Equals(element, item);
 
@@ -143,7 +146,9 @@ namespace Indexer.Linq
                     : new TakeLastIndexer<TSource>(this, count);
             }
 
-            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>(source, appended, second);
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) =>
+                second.IsEmptyArray() ? this
+                    : new ConcatNIndexer<TSource>(source, appended, second);
 
             public override bool Contains(TSource item) => source.Contains(item) || ((ICollection<TSource>)appended).Contains(item);
 
@@ -178,8 +183,9 @@ namespace Indexer.Linq
         public static IReadOnlyList<TSource> Prepend<TSource>(this IReadOnlyList<TSource> source, TSource element)
         {
             if (source is null) { ThrowHelper.ThrowArgumentNullException(nameof(source)); }
-            return source is IPrepend<TSource> prepend
-                ? prepend.Prepend(element) : new PrependIndexer<TSource>(source, element);
+            return source.IsEmptyArray() ? new SingleElementIndexer<TSource>(element)
+                : source is IPrepend<TSource> prepend ? prepend.Prepend(element)
+                : new PrependIndexer<TSource>(source, element);
         }
 
         private interface IPrepend<TSource> : IReadOnlyList<TSource>
@@ -213,7 +219,9 @@ namespace Indexer.Linq
                     : count == 1 ? new SingleElementIndexer<TSource>(element)
                     : new TakeIndexer<TSource>(this, count);
 
-            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>(new SingleElementIndexer<TSource>(element), source, second);
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) =>
+                second.IsEmptyArray() ? this
+                    : new ConcatNIndexer<TSource>(new SingleElementIndexer<TSource>(element), source, second);
 
             public override bool Contains(TSource item) => EqualityComparer<TSource>.Default.Equals(element, item) || source.Contains(item);
 
@@ -307,7 +315,9 @@ namespace Indexer.Linq
                     : new TakeIndexer<TSource>(this, count);
             }
 
-            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>(prepended, source, second);
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) =>
+                second.IsEmptyArray() ? this
+                    : new ConcatNIndexer<TSource>(prepended, source, second);
 
             public override bool Contains(TSource item) => ((ICollection<TSource>)prepended).Contains(item) || source.Contains(item);
 
@@ -377,7 +387,9 @@ namespace Indexer.Linq
                     : count == 1 ? new SingleElementIndexer<TSource>(appended)
                     : new TakeLastIndexer<TSource>(this, count);
 
-            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>(new SingleElementIndexer<TSource>(prepended), source, new SingleElementIndexer<TSource>(appended), second);
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) =>
+                second.IsEmptyArray() ? this
+                    : new ConcatNIndexer<TSource>(new SingleElementIndexer<TSource>(prepended), source, new SingleElementIndexer<TSource>(appended), second);
 
             public override bool Contains(TSource item) => EqualityComparer<TSource>.Default.Equals(prepended, item) || source.Contains(item) || EqualityComparer<TSource>.Default.Equals(appended, item);
 
@@ -509,7 +521,9 @@ namespace Indexer.Linq
                     : new TakeLastIndexer<TSource>(this, count);
             }
 
-            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) => new ConcatNIndexer<TSource>(prepended, source, appended, second);
+            public IReadOnlyList<TSource> Concat(IReadOnlyList<TSource> second) =>
+                second.IsEmptyArray() ? this
+                    : new ConcatNIndexer<TSource>(prepended, source, appended, second);
 
             public override bool Contains(TSource item) => ((ICollection<TSource>)prepended).Contains(item) || source.Contains(item) || ((ICollection<TSource>)appended).Contains(item);
 
@@ -602,7 +616,7 @@ namespace Indexer.Linq
             public IReadOnlyList<T> SkipLast(int _count) => _count <= 0 ? this : new EmptyIndexer<T>();
             public IReadOnlyList<T> Take(int _count) => _count <= 0 ? new EmptyIndexer<T>() : this;
             public IReadOnlyList<T> TakeLast(int _count) => _count <= 0 ? new EmptyIndexer<T>() : this;
-            public IReadOnlyList<T> Concat(IReadOnlyList<T> second) => new PrependIndexer<T>(second, element);
+            public IReadOnlyList<T> Concat(IReadOnlyList<T> second) => second.IsEmptyArray() ? this : new PrependIndexer<T>(second, element);
             public override bool Contains(T item) => EqualityComparer<T>.Default.Equals(element, item);
             public override int IndexOf(T item) => EqualityComparer<T>.Default.Equals(element, item) ? 0 : -1;
             public override void CopyTo(T[] array, int arrayIndex) => array[arrayIndex] = element;

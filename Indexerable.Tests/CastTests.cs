@@ -357,7 +357,7 @@ namespace Indexer.Linq.Tests
         public void CastFirstOnEmptySequenceThrows()
         {
             object[] objects = [];
-            Assert.Throws<IndexOutOfRangeException>(() => objects.Cast<string>()[0]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => objects.Cast<string>()[0]);
             Assert.Throws<ArgumentOutOfRangeException>(() => objects.Cast<object, string>()[0]);
         }
 
@@ -389,7 +389,7 @@ namespace Indexer.Linq.Tests
         public void CastLastOnEmptySequenceThrows()
         {
             object[] objects = [];
-            Assert.Throws<IndexOutOfRangeException>(() => objects.Cast<string>()[^1]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => objects.Cast<string>()[^1]);
             Assert.Throws<ArgumentOutOfRangeException>(() => objects.Cast<object, string>()[^1]);
         }
 
